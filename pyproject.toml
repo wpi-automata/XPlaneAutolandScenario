@@ -1,0 +1,15 @@
+[project]
+name = "xplane_autoland"
+version = "0.1.0"
+description = "A package for running an autoland scenario in X-Plane 11"
+dependencies = [
+    "pandas",
+    "scipy"
+]
+
+[build-system]
+requires = ["setuptools >= 47.1.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
