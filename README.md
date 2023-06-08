@@ -2,6 +2,7 @@
 This is an autolanding scenario using the X-Plane simulator for the Grant County airport Runway 04.
 The module is intended as a research tool for verification with learning-enabled components in the loop.
 
+The `xpc3_helper.py` code is an extension of the Stanford [NASA_ULI_Xplane_Simulator](https://github.com/StanfordASL/NASA_ULI_Xplane_Simulator/tree/sim_v2/src) code.
 
 ## Quickstart
 Create a Python virtual environment using at least Python 3.7.
