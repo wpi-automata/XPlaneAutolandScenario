@@ -5,14 +5,7 @@ import time
 
 from xplane_autoland.controllers.glideslope_controller import GlideSlopeController
 from xplane_autoland.xplane_connect.xpc3 import XPlaneConnect
-from xplane_autoland.xplane_connect.xpc3_helper import get_autoland_statevec, reset, sendCTRL
-
-## Potential info
-# dist = dist_from_glideslope(client)
-# linv = body_frame_velocity(client)
-# HUSMI, UBGUY = get_glideslope_points()
-# # 50 ft TCH -> m -> + the agl at that point
-# tch = 50 * 0.3048 + 223
+from xplane_autoland.xplane_connect.xpc3_helper import get_autoland_statevec, reset, sendCTRL, sendBrake
 
 if __name__ == '__main__':
     client = XPlaneConnect()
@@ -28,13 +21,29 @@ if __name__ == '__main__':
         last_time = time.time()
         for step in range(math.ceil(max_time/dt)):
             state = get_autoland_statevec(client)
-            # TODO: once it hits the ground, stop generating autoland controls and taxi (or just stop)
+            h = state[-1]
             elevator, aileron, rudder, throttle = gsc.control(state)
+            # the runway slopes down so this works fine
+            if h <= gsc.runway_elevation:
+                # disable throttle once you've landed
+                sendCTRL(client, elevator, aileron, rudder, -1)
+                break
             sendCTRL(client, elevator, aileron, rudder, throttle)
             time_diff = dt - (time.time() - last_time)
             if time_diff > 0:
                 time.sleep(time_diff)
             last_time = time.time()
+
+        # run the simulation for 10 more seconds to complete landing
+        for step in range(math.ceil(10/dt)):
+            state = get_autoland_statevec(client)
+            # use the controller to keep it straight
+            elevator, aileron, rudder, _ = gsc.control(state)
+            throttle = -1
+            sendBrake(client, 1)
+            sendCTRL(client, elevator, aileron, rudder, throttle)
+            time.sleep(dt)
+
         print('Done')
         client.pauseSim(True)
     except KeyboardInterrupt:
