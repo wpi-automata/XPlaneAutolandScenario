@@ -399,6 +399,12 @@ def get_home_heading(client):
     true_heading = get_heading(client)
     return true_heading - HOME_HEADING
 
+def to_local_heading(client, psi):
+    """
+    Convert home heading to local frame heading
+    """
+    return psi + HOME_HEADING
+
 def get_ground_velocity(client):
     return client.getDREF("sim/flightmodel/position/groundspeed")
 
@@ -625,4 +631,37 @@ def get_autoland_statevec(client):
         h
     ]).T
 
+
+def autoland_xy_to_local_xz(client, x, y):
+    """
+    Converts autoland statevec's x, y elements to local x, z coordinates.
+    Note: in local frame, y is elevation (up) so we care about x and **z** for this rotation
+    """
+    # generated with scripts/calc_transform.py
+    theta = 0.6224851011623932
+    R = np.array([[np.cos(theta), -np.sin(theta)],
+                [np.sin(theta),  np.cos(theta)]])
+    t = np.array([[-45411.57449564],
+                  [ 33689.81426868]])
+    v = np.array([x, y]).reshape((2, 1))
+    return R@v + t
+
+def send_autoland_xy(client, x, y):
+    local_x, local_z = autoland_xy_to_local_xz(client, x, y)
+    send_local_x(client, local_x)
+    send_local_z(client, local_z)
+
+
+def set_autoland_pos(client, phi, theta, psi, x, y, h):
+    client.sendDREF('sim/flightmodel/position/phi', phi)
+    client.sendDREF('sim/flightmodel/position/theta', theta)
+    client.sendDREF('sim/flightmodel/position/psi', to_local_heading(client, psi))
+    send_autoland_xy(client, x, y)
+    # set elevation by getting offset between local y (the axis for elevation)
+    # and current elevation
+    # then use that to shift the coordinate to align with the desired elevation
+    curr_elev = client.getDREF("sim/flightmodel/position/elevation")[0]
+    curr_localy = client.getDREF("sim/flightmodel/position/local_y")[0]
+    offset = curr_elev - curr_localy
+    client.sendDREF("sim/flightmodel/position/local_y", h - offset)
 
