@@ -637,14 +637,22 @@ def autoland_xy_to_local_xz(client, x, y):
     Converts autoland statevec's x, y elements to local x, z coordinates.
     Note: in local frame, y is elevation (up) so we care about x and **z** for this rotation
     """
-    # generated with scripts/calc_transform.py
-    theta = 0.6224851011623932
-    R = np.array([[np.cos(theta), -np.sin(theta)],
-                [np.sin(theta),  np.cos(theta)]])
-    t = np.array([[-45411.57449564],
-                  [ 33689.81426868]])
-    v = np.array([x, y]).reshape((2, 1))
-    return R@v + t
+    # rotation to align to runway
+    rotrad = -0.6224851011617226
+    R = np.array([[ np.cos(rotrad), -np.sin(rotrad) ],
+                  [ np.sin(rotrad),  np.cos(rotrad)]])
+    # flip a sign because of x, y orientation
+    # in autoland frame, x is pointing frame the runway to the starting point
+    # and y is pointing to the right from the plane's point of view
+    F = np.array([[-1.,  0.],
+                [ 0., 1.]])
+    t = np.array([[-25159.26953],
+                  [33689.8125]])
+
+    r = (R@F)@np.array([[x], [y]])
+    local_x, local_z = r + t
+    return local_x, local_z
+
 
 def send_autoland_xy(client, x, y):
     local_x, local_z = autoland_xy_to_local_xz(client, x, y)
