@@ -4,8 +4,7 @@ import time
 
 from xplane_autoland.xplane_connect.xpc3 import XPlaneConnect
 
-# TODO come up with a better name
-class Model:
+class XPlaneDriver:
     def __init__(self, home_heading=53.7, local_start=(-35285.421875, 40957.0234375),
                  start_elev = 1029.45):
         self._client = XPlaneConnect()
