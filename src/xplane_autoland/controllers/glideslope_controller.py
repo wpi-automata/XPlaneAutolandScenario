@@ -7,8 +7,7 @@ import math
 GRANT_RWY4_TCH = 50 * 0.3048
 
 class GlideSlopeController:
-    def __init__(self, client, gamma, tch=GRANT_RWY4_TCH, runway_elev=361, des_u=50., dt=0.1):
-        self._client      = client
+    def __init__(self, gamma, tch=GRANT_RWY4_TCH, runway_elev=361, des_u=50., dt=0.1):
         self._gamma       = gamma    # glide slope angle
         self._h_thresh    = tch + runway_elev # height of runway threshold (m) is the TCH + the elevation of the runway (m)
         self._runway_elev = runway_elev

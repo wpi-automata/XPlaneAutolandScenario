@@ -69,6 +69,36 @@ class XPlaneDriver:
         # Reset fuel levels
         self._client.sendDREFs(["sim/flightmodel/weight/m_fuel1","sim/flightmodel/weight/m_fuel2"],[232,232])
 
+    def pause(self, yes=True):
+        """
+        Pause or unpause the simulation
+
+        Args:
+            yes: whether to pause or unpause the sim [default: True (i.e., pause)]
+        """
+        self._client.pauseSim(yes)
+
+    def send_ctrl(self, elev, aileron, rudder, throttle):
+        """
+        Sets control surface information (on the main aircraft)
+
+            Args:
+                elev: [-1, 1]
+                aileron: [-1, 1]
+                rudder: [-1, 1]
+                throttle: [-1, 1]
+        """
+        self._client.sendCTRL([elev, aileron, rudder, throttle])
+
+    def send_brake(self, brake):
+        """
+        Set the parking brake to on or off
+
+            Args:
+                brake: 0 - off; 1 - on
+        """
+        self._client.sendDREF("sim/flightmodel/controls/parkbrake", brake)
+
     ###########################################################################
     # State estimation
     # by default these are passthroughs -- can be overloaded in a subclass
