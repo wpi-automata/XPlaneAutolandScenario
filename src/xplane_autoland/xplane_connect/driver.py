@@ -6,13 +6,13 @@ from xplane_autoland.xplane_connect.xpc3 import XPlaneConnect
 
 class XPlaneDriver:
     def __init__(self, home_heading=53.7, local_start=(-35285.421875, 40957.0234375),
-                 start_elev = 1029.45):
+                 start_ground_range=12464, start_elev = 1029.45):
         self._client = XPlaneConnect()
         self._home_heading = home_heading
         self._local_start = local_start
         # TODO: get from glideslope points
-        self._start_elev = start_elev # beginning elevation for a 3 degree glideslope
-
+        self._start_ground_range = start_ground_range # (m)
+        self._start_elev = start_elev # (m) beginning elevation for a 3 degree glideslope
 
     def reset(self, cteInit=0, heInit=0, dtpInit=0, noBrake=True):
         """
@@ -38,7 +38,7 @@ class XPlaneDriver:
         # Zero out moments and forces
         initRef = "sim/flightmodel/position/"
         drefs = []
-        refs = ['theta','phi','psi','local_vx','local_vy','local_vz','local_ax','local_ay','local_az',
+        refs = ['theta','phi', 'local_vx','local_vy','local_vz','local_ax','local_ay','local_az',
         'Prad','Qrad','Rrad','q','groundspeed',
         'indicated_airspeed','indicated_airspeed2','true_airspeed','M','N','L','P','Q','R','P_dot',
         'Q_dot','R_dot','Prad','Qrad','Rrad']
@@ -49,11 +49,8 @@ class XPlaneDriver:
 
         # Set position and orientation
         # Set known good start values
-        # TODO: remove this and get start position based on runway start
-        self._client.sendPOSI([47.196890, -119.33260, 362.14444, 0.31789625, 0.10021035, 53.7, 1], 0)
-        # Fine-tune position
-        # Setting position with lat/lon gets you within 0.3m. Setting local_x, local_z is more accurate)
-        self.setHomeState(cteInit, dtpInit, heInit)
+        # Note: setting position with lat/lon gets you within 0.3m. Setting local_x, local_z is more accurate)
+        self.set_orient_pos(0., 0., 0., 12464, 0., self._start_elev)
 
         # Fix the plane if you "crashed" or broke something
         self._client.sendDREFs(["sim/operation/fix_all_systems"], [1])
@@ -180,6 +177,19 @@ class XPlaneDriver:
     def get_pos_state(self):
         pass
 
+    def set_orient_pos(self, phi, theta, psi, x, y, h):
+        self._client.sendDREF('sim/flightmodel/position/phi', phi)
+        self._client.sendDREF('sim/flightmodel/position/theta', theta)
+        self._client.sendDREF('sim/flightmodel/position/psi', self._to_local_heading(psi))
+        self._send_xy(x, y)
+        # set elevation by getting offset between local y (the axis for elevation)
+        # and current elevation
+        # then use that to shift the coordinate to align with the desired elevation
+        curr_elev = self._client.getDREF("sim/flightmodel/position/elevation")[0]
+        curr_localy = self._client.getDREF("sim/flightmodel/position/local_y")[0]
+        offset = curr_elev - curr_localy
+        self._client.sendDREF("sim/flightmodel/position/local_y", h - offset)
+
     
     ###########################################################################
     # Helper functions
@@ -241,7 +251,7 @@ class XPlaneDriver:
         # Get the positions in home coordinates
         rotx, roty = self._local_to_home(x, y)
 
-        x = self._get_autoland_runway_thresh() - roty
+        x = self._start_ground_range - roty
         y = -rotx
         return x, y
 
@@ -313,36 +323,34 @@ class XPlaneDriver:
         roty = -0.8124320138514389 * x + 0.583055934597441 * y
         return rotx, roty
 
-    # TODO: replace this (don't have three coordinate systems)
-    def _get_autoland_runway_thresh(self):
-        '''
-        The runway threshold along the y-axis in the home frame
-        '''
-        return 12464
-
-    # TODO: replace this
-    def setHomeState(self, x, y, theta):
-        """Set the aircraft's state using coordinates in the home frame.
-        This is equivalent to setting the crosstrack error (x), downtrack
-        position (y), and heading error (theta).
-
-            Args:
-                x: desired crosstrack error [-10, 10] (meters)
-                y: desired downtrack position [0, 2982] (meters)
-                theta: desired heading error [-180, 180] (degrees)
+    def _to_local_heading(self, psi):
         """
+        Convert home heading to local frame heading
+        """
+        return psi + self._home_heading
 
-        localx, localz = self.homeToLocal(x, y)
+    def _send_xy(self, x, y):
+        local_x, local_z = self.xy_to_local_xz(x, y)
+        self._client.sendDREF("sim/flightmodel/position/local_x", local_x)
+        self._client.sendDREF("sim/flightmodel/position/local_z", local_z)
 
-        self._client.sendDREF("sim/flightmodel/position/local_x", localx)
-        self._client.sendDREF("sim/flightmodel/position/local_z", localz)
-        self._client.sendDREF("sim/flightmodel/position/psi", self._home_heading - theta)
+    def xy_to_local_xz(self, x, y):
+        """
+        Converts autoland statevec's x, y elements to local x, z coordinates.
+        Note: in local frame, y is elevation (up) so we care about x and **z** for this rotation
+        """
+        # rotation to align to runway
+        rotrad = -0.6224851011617226
+        R = np.array([[ np.cos(rotrad), -np.sin(rotrad) ],
+                    [ np.sin(rotrad),  np.cos(rotrad)]])
+        # flip a sign because of x, y orientation
+        # in autoland frame, x is pointing frame the runway to the starting point
+        # and y is pointing to the right from the plane's point of view
+        F = np.array([[-1.,  0.],
+                    [ 0., 1.]])
+        t = np.array([[-25159.26953],
+                    [33689.8125]])
 
-        time.sleep(0.02)
-
-        # TODO: make this configurable
-        startElev = 1029.45 # beginning elevation for a 3 degree glideslope
-        curr_elev = self._client.getDREF("sim/flightmodel/position/elevation")[0]
-        curr_localy = self._client.getDREF("sim/flightmodel/position/local_y")[0]
-        offset = curr_elev - curr_localy
-        self._client.sendDREF("sim/flightmodel/position/local_y", startElev - offset)
+        r = (R@F)@np.array([[x], [y]])
+        local_x, local_z = r + t
+        return local_x, local_z
