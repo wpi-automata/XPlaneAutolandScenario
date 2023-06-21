@@ -69,24 +69,24 @@ class XPlaneDriver:
         # Reset fuel levels
         self._client.sendDREFs(["sim/flightmodel/weight/m_fuel1","sim/flightmodel/weight/m_fuel2"],[232,232])
 
-        ###########################################################################
-        # State estimation
-        # by default these are passthroughs -- can be overloaded in a subclass
-        ###########################################################################
-        def est_statevec(self):
-            return self.get_statevec()
+    ###########################################################################
+    # State estimation
+    # by default these are passthroughs -- can be overloaded in a subclass
+    ###########################################################################
+    def est_statevec(self):
+        return self.get_statevec()
 
-        def est_vel_state(self):
-            return self.get_vel_state()
+    def est_vel_state(self):
+        return self.get_vel_state()
 
-        def est_orient_vel_state(self):
-            return self.get_orient_vel_state()
+    def est_orient_vel_state(self):
+        return self.get_orient_vel_state()
 
-        def est_orient_state(self):
-            return self.get_orient_state()
+    def est_orient_state(self):
+        return self.get_orient_state()
 
-        def est_pos_state(self):
-            return self.get_pos_state()
+    def est_pos_state(self):
+        return self.get_pos_state()
 
     ###########################################################################
     # True state getters
