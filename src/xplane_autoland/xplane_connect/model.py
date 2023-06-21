@@ -31,7 +31,7 @@ class Model:
         self._client.sendDREF("sim/operation/override/override_joystick", 1)
 
         # Zero out control inputs
-        self._client.sendCTRL(0,0,0,0)
+        self._client.sendCTRL([0,0,0,0])
 
         # Set parking brake
         self._client.sendDREF("sim/flightmodel/controls/parkbrake", int(noBrake))
@@ -110,7 +110,7 @@ class Model:
             h      - aircraft altitude (m)
         """
 
-        vel = self._body_frame_velocity(self._client)
+        vel = self._body_frame_velocity()
 
         P = self._client.getDREF('sim/flightmodel/position/P')[0]
         Q = self._client.getDREF('sim/flightmodel/position/Q')[0]
@@ -118,10 +118,10 @@ class Model:
 
         phi = self._client.getDREF('sim/flightmodel/position/phi')[0]
         theta = self._client.getDREF('sim/flightmodel/position/theta')[0]
-        psi = self._get_home_heading(self._client)
+        psi = self._get_home_heading()
 
         # runway distances (different frame than home)
-        x, y = self._get_home_xy(self._client)
+        x, y = self._get_home_xy()
         h = self._client.getDREF('sim/flightmodel/position/elevation')[0]
 
         return np.array([
@@ -189,7 +189,7 @@ class Model:
         """
         Get the value of the aircraft's heading in degrees from the runway
         """
-        true_heading = self.get_heading(self._client)
+        true_heading = self._client.getDREF("sim/flightmodel/position/psi")[0]
         return true_heading - self._home_heading
 
     def _get_local_heading(self):
@@ -285,7 +285,7 @@ class Model:
         return rotx, roty
 
     # TODO: replace this (don't have three coordinate systems)
-    def _get_autoland_runway_thresh():
+    def _get_autoland_runway_thresh(self):
         '''
         The runway threshold along the y-axis in the home frame
         '''
