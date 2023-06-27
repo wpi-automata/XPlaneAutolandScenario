@@ -8,6 +8,7 @@ from xplane_autoland.xplane_connect.driver import XPlaneDriver
 
 if __name__ == '__main__':
     plane = XPlaneDriver()
+    plane.pause(True)
     plane.reset()
 
     dt = 0.1

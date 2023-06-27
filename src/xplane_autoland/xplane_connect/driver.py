@@ -77,6 +77,9 @@ class XPlaneDriver:
         # Reset fuel levels
         self._client.sendDREFs(["sim/flightmodel/weight/m_fuel1","sim/flightmodel/weight/m_fuel2"],[232,232])
 
+        # Give time to settle
+        time.sleep(1.)
+
     def pause(self, yes=True):
         """
         Pause or unpause the simulation
@@ -147,46 +150,32 @@ class XPlaneDriver:
             h      - aircraft altitude (m)
         """
 
-        vel = self._body_frame_velocity()
+        vel  = self.get_vel_state()
+        ovel = self.get_orient_vel_state()
+        o    = self.get_orient_state()
+        pos  = self.get_pos_state()
 
+        return np.stack((vel, ovel, o, pos)).flatten()
+
+    def get_vel_state(self):
+        return self._body_frame_velocity()
+
+    def get_orient_vel_state(self):
         P = self._client.getDREF('sim/flightmodel/position/P')[0]
         Q = self._client.getDREF('sim/flightmodel/position/Q')[0]
         R = self._client.getDREF('sim/flightmodel/position/R')[0]
+        return np.array([P, Q, R])
 
+    def get_orient_state(self):
         phi = self._client.getDREF('sim/flightmodel/position/phi')[0]
         theta = self._client.getDREF('sim/flightmodel/position/theta')[0]
         psi = self._get_home_heading()
-
-        # runway distances (different frame than home)
-        x, y = self._get_home_xy()
-        h = self._client.getDREF('sim/flightmodel/position/elevation')[0]
-
-        return np.array([
-            vel[0],
-            vel[1],
-            vel[2],
-            P,
-            Q,
-            R,
-            phi,
-            theta,
-            psi,
-            x,
-            y,
-            h
-        ]).T
-
-    def get_vel_state(self):
-        pass
-
-    def get_orient_vel_state(self):
-        pass
-
-    def get_orient_state(self):
-        pass
+        return np.array([phi, theta, psi])
 
     def get_pos_state(self):
-        pass
+        x, y = self._get_home_xy()
+        h = self._client.getDREF('sim/flightmodel/position/elevation')[0]
+        return np.array([x, y, h])
 
     def set_orient_pos(self, phi, theta, psi, x, y, h):
         self._client.sendDREF('sim/flightmodel/position/phi', phi)
