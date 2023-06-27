@@ -4,15 +4,26 @@ import time
 
 from xplane_autoland.xplane_connect.xpc3 import XPlaneConnect
 
+# Default values set for Rwy 04 of Grant Co. Airport
+# TODOs relate to generalizing for arbitrary airports
+
 class XPlaneDriver:
     def __init__(self, home_heading=53.7, local_start=(-35285.421875, 40957.0234375),
-                 start_ground_range=12464, start_elev = 1029.45):
+                 start_ground_range=12464, start_elev = 1029.45,
+                 t=(-25159.26953, 33689.8125)):
         self._client = XPlaneConnect()
         self._home_heading = home_heading
         self._local_start = local_start
         # TODO: get from glideslope points
         self._start_ground_range = start_ground_range # (m)
         self._start_elev = start_elev # (m) beginning elevation for a 3 degree glideslope
+        self._t = np.array(t).reshape((2, 1))
+
+        # TODO: determine this automatically
+        #       relates to home heading and local coordinate frame at given airport
+        self._rotrad = -0.6224851011617226
+        self._R = np.array([[ np.cos(self._rotrad), -np.sin(self._rotrad) ],
+                            [ np.sin(self._rotrad),  np.cos(self._rotrad)]])
 
     def reset(self, cteInit=0, heInit=0, dtpInit=0, noBrake=True):
         """
@@ -267,27 +278,6 @@ class XPlaneDriver:
         roty = 0.8124320138514389 * x + 0.583055934597441 * y
         return rotx, roty
 
-
-    # TODO: replace with single-step coordinate transform
-    def homeToLocal(self, x, y):
-        """Get the local coordinates of the aircraft from the home coordinates.
-
-            Args:
-                x: x-value in the home coordinate frame
-                y: y-value in the home coordinate frame
-        """
-
-        # Rotate back
-        rotx, roty = self.rotateToLocal(x, y)
-
-        # Translate back
-        startX, startY = self._local_start
-        transx = startX - rotx
-        transy = startY - roty
-
-        return transx, transy
-
-
     # TODO: replace with single-step coordinate transformation
     def _local_to_home(self, x, y):
         """Get the home coordinates of the aircraft from the local coordinates.
@@ -330,27 +320,32 @@ class XPlaneDriver:
         return psi + self._home_heading
 
     def _send_xy(self, x, y):
-        local_x, local_z = self.xy_to_local_xz(x, y)
+        local_x, local_z = self._xy_to_local_xz(x, y)
         self._client.sendDREF("sim/flightmodel/position/local_x", local_x)
         self._client.sendDREF("sim/flightmodel/position/local_z", local_z)
 
-    def xy_to_local_xz(self, x, y):
+    def _xy_to_local_xz(self, x, y):
         """
         Converts autoland statevec's x, y elements to local x, z coordinates.
         Note: in local frame, y is elevation (up) so we care about x and **z** for this rotation
         """
         # rotation to align to runway
-        rotrad = -0.6224851011617226
-        R = np.array([[ np.cos(rotrad), -np.sin(rotrad) ],
-                    [ np.sin(rotrad),  np.cos(rotrad)]])
         # flip a sign because of x, y orientation
         # in autoland frame, x is pointing frame the runway to the starting point
         # and y is pointing to the right from the plane's point of view
         F = np.array([[-1.,  0.],
                     [ 0., 1.]])
-        t = np.array([[-25159.26953],
-                    [33689.8125]])
+        r = (self._R@F)@np.array([[x], [y]]).reshape((2, 1))
+        local_x, local_z = r + self._t
+        return local_x.flatten(), local_z.flatten()
 
-        r = (R@F)@np.array([[x], [y]])
-        local_x, local_z = r + t
-        return local_x, local_z
+    def _local_xz_to_xy(self, local_x, local_z):
+        R = self._R
+        F = np.array([[-1.,  0.],
+                    [ 0., 1.]])
+        RF = R@F
+        l = np.array([[local_x], [local_z]]).reshape((2, 1))
+        r = l - self._t
+        x, y = np.linalg.inv(RF)@r
+        return x, y
+
