@@ -178,9 +178,11 @@ class XPlaneDriver:
         return np.array([x, y, h])
 
     def set_orient_pos(self, phi, theta, psi, x, y, h):
-        self._client.sendDREF('sim/flightmodel/position/phi', phi)
-        self._client.sendDREF('sim/flightmodel/position/theta', theta)
-        self._client.sendDREF('sim/flightmodel/position/psi', self._to_local_heading(psi))
+        # zero out orientation at first
+        self._client.sendDREF('sim/flightmodel/position/phi', 0)
+        self._client.sendDREF('sim/flightmodel/position/theta', 0)
+        self._client.sendDREF('sim/flightmodel/position/psi', self._to_local_heading(0))
+
         self._send_xy(x, y)
         # set elevation by getting offset between local y (the axis for elevation)
         # and current elevation
@@ -189,6 +191,10 @@ class XPlaneDriver:
         curr_localy = self._client.getDREF("sim/flightmodel/position/local_y")[0]
         offset = curr_elev - curr_localy
         self._client.sendDREF("sim/flightmodel/position/local_y", h - offset)
+
+        self._client.sendDREF('sim/flightmodel/position/phi', phi)
+        self._client.sendDREF('sim/flightmodel/position/theta', theta)
+        self._client.sendDREF('sim/flightmodel/position/psi', self._to_local_heading(psi))
 
     
     ###########################################################################
