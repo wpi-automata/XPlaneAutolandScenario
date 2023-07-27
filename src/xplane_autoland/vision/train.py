@@ -130,7 +130,7 @@ def train_model(model, criterion, optimizer, dataloaders, dataset_sizes,
             logger.info(f'#### Epoch Loss/{phase}: {epoch_loss:.4f} ####')
             writer.add_scalar(f"Epoch Loss/{phase}", epoch_loss, epoch)
 
-            if phase == 'train' and scheduler is not None:
+            if phase == 'val' and scheduler is not None:
                 scheduler.step(epoch_loss)
                 lr = optimizer.param_groups[0]["lr"]
                 logger.info(f"LR: {lr}")
