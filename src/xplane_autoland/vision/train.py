@@ -85,6 +85,11 @@ def train_model(model, criterion, optimizer, dataloaders, dataset_sizes,
 
     since = time.time()
     for epoch in range(num_epochs):
+        lr = optimizer.param_groups[0]["lr"]
+        if lr < 1e-9:
+            logger.info(f"Learning Stopped: learning rate has been dropped too low by scheduler (lr={lr})")
+            break
+
         logger.info(f'Epoch {epoch}/{num_epochs - 1}')
         logger.info('-' * 10)
 
