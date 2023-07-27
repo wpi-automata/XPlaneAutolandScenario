@@ -75,7 +75,7 @@ def train_model(model, criterion, optimizer, dataloaders, dataset_sizes,
 
     lr = optimizer.param_groups[0]["lr"]
     logger.info(f"LR: {lr}")
-    writer.add_scalar(f"LR", lr, 0)
+    writer.add_scalar(f"LR", lr, -1)
 
     # Create a temporary directory to save training checkpoints
     best_model_params_path = f'{save_dir}/best_model_params.pt'
@@ -125,16 +125,16 @@ def train_model(model, criterion, optimizer, dataloaders, dataset_sizes,
                     logger.info(f'Mean Running Loss/{phase}: {loss_report:.4f}')
                     writer.add_scalar(f"Mean Running Loss/{phase}", loss_report, bidx/report_interval + epoch * math.ceil(dataset_sizes[phase]/report_interval))
 
-            if phase == 'train' and scheduler is not None:
-                scheduler.step()
-                lr = optimizer.param_groups[0]["lr"]
-                logger.info(f"LR: {lr}")
-                writer.add_scalar(f"LR", lr, epoch+1)
-
             epoch_loss = running_loss / dataset_sizes[phase]
 
             logger.info(f'#### Epoch Loss/{phase}: {epoch_loss:.4f} ####')
             writer.add_scalar(f"Epoch Loss/{phase}", epoch_loss, epoch)
+
+            if phase == 'train' and scheduler is not None:
+                scheduler.step(epoch_loss)
+                lr = optimizer.param_groups[0]["lr"]
+                logger.info(f"LR: {lr}")
+                writer.add_scalar(f"LR", lr, epoch)
 
             # deep copy the model
             if phase == 'val' and epoch_loss < best_loss:
@@ -156,6 +156,7 @@ if __name__ == '__main__':
     parser.add_argument("--save-dir", help="The directory to save everything in", default=None)
     parser.add_argument("--data-dir", help="The directory with image data should contain a states.csv and images directory", default=None)
     parser.add_argument("--resnet-version", help="Choose which resnet to use", default="50", choices=["18", "50"])
+    parser.add_argument("--fixed-lr", action="store_true", help="Don't vary the learning rate")
     args = parser.parse_args()
 
     set_all_seeds(args.seed)
@@ -197,7 +198,7 @@ if __name__ == '__main__':
     dataset_sizes = {"train": len(train_dataset), "val": len(val_dataset)}
 
     criterion = nn.MSELoss(reduction="mean")
-    optimizer = optim.Adam(model.parameters(), lr=1e-6, betas=(0.9, 0.999))
-    # scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
-    scheduler = None
+    lr = 1e-6 if args.fixed_lr else 1e-3
+    optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.9, 0.999))
+    scheduler = None if args.fixed_lr else lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
     train_model(model, criterion, optimizer, dataloaders, dataset_sizes, logger, save_dir, num_epochs=300, scheduler=scheduler)
