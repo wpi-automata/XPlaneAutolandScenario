@@ -160,8 +160,6 @@ if __name__ == '__main__':
     parser.add_argument("--num-epochs", type=int, help="The number of epochs to run", default=300)
     args = parser.parse_args()
 
-    set_all_seeds(args.seed)
-
     save_dir = args.save_dir
     if save_dir is None:
         today = date.today()
@@ -175,6 +173,9 @@ if __name__ == '__main__':
         save_dir.mkdir()
 
     logger = get_logger(save_dir)
+    logger.info(f"Setting seed to: {args.seed}")
+    set_all_seeds(args.seed)
+
     logger.info(f"Saving files to: {save_dir}")
     logger.info(f"Using ResNet{args.resnet_version}")
 
