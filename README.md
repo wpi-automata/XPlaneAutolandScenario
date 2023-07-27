@@ -15,5 +15,11 @@ source ./env/bin/activate
 pip install -e .
 ```
 
+Download and install X-Plane 11 from [here](https://www.x-plane.com/desktop/try-it/older/).
+
+Set up `XPlaneConnect` for communicating with `X-Plane` via `Python`.
+Download `XPlaneConnect` version 1.2.0 from the [releases](https://github.com/nasa/XPlaneConnect/releases).
+Navigate to X-Plane 11/Resources/plugins and extract the downloaded zip to this location.
+
 Launch X-Plane 11 and start a flight with a Cessna Skyhawk at Grant Co Airport (KMWH).
 Run `run_autoland.py` from within the virtual environment.

@@ -15,9 +15,9 @@ from xplane_autoland.controllers.glideslope_controller import GlideSlopeControll
 dphi_sweep   = [-5, -2, 0, 2, 5]
 dtheta_sweep = [-5, -2, 0, 2, 5]
 dpsi_sweep   = [-5, -2, 0, 2, 5]
-dx_sweep     = np.arange(-100, 101, 50)
-dy_sweep     = np.arange(-100, 101, 50)
-dh_sweep     = np.arange(-100, 101, 50)
+dx_sweep     = np.arange(-100, 101, 20)
+dy_sweep     = np.arange(-100, 101, 20)
+dh_sweep     = np.arange(-100, 101, 20)
 
 
 def data_for_x(driver, x_center, prob, save_dir="data"):
