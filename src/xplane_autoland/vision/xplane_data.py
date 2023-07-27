@@ -34,6 +34,7 @@ class AutolandImageDataset(Dataset):
         img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, -1].split("/")[-1])
         image = read_image(img_path)
         label = self.img_labels.iloc[idx, 3:5].to_numpy(dtype=np.float32)
+        label = torch.from_numpy(label)
         orient_alt = np.zeros((4,), dtype=np.float32)
         orient_alt[:-1] = self.img_labels.iloc[idx, :3].to_numpy(dtype=np.float32)
         orient_alt[-1] = self.img_labels.iloc[idx, 5]
