@@ -15,7 +15,11 @@ class AutolandImageDataset(Dataset):
         # normalize with expected maximum values in meters
         # note: in practice can be larger, it will just map to a value > 1
         self.orient_norm_divisor = torch.FloatTensor([180., 180., 180., 2000.])
-        self.norm_divisor = torch.FloatTensor([12464., 500.])
+        # Note: saw issues where it gave preference to accuracy in x
+        # with this unequal normalization
+        # self.norm_divisor = torch.FloatTensor([12464., 500.])
+        # Instead, try just operating in km
+        self.norm_divisor = 1000.
 
         if target_transform is not None:
             warnings.warn("Using non-default target transform removes label normalization. Remember to normalize in your provided transformation")
