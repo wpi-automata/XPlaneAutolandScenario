@@ -157,6 +157,7 @@ if __name__ == '__main__':
     parser.add_argument("--data-dir", help="The directory with image data should contain a states.csv and images directory", default=None)
     parser.add_argument("--resnet-version", help="Choose which resnet to use", default="50", choices=["18", "50"])
     parser.add_argument("--fixed-lr", action="store_true", help="Don't vary the learning rate")
+    parser.add_argument("--num-epochs", type=int, help="The number of epochs to run", default=300)
     args = parser.parse_args()
 
     set_all_seeds(args.seed)
@@ -201,4 +202,4 @@ if __name__ == '__main__':
     lr = 1e-6 if args.fixed_lr else 1e-3
     optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.9, 0.999))
     scheduler = None if args.fixed_lr else lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
-    train_model(model, criterion, optimizer, dataloaders, dataset_sizes, logger, save_dir, num_epochs=300, scheduler=scheduler)
+    train_model(model, criterion, optimizer, dataloaders, dataset_sizes, logger, save_dir, num_epochs=args.num_epochs, scheduler=scheduler)
