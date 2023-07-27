@@ -151,7 +151,7 @@ def train_model(model, criterion, optimizer, dataloaders, dataset_sizes,
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Overfit on a single image")
+    parser = argparse.ArgumentParser(description="Train a state estimator for the autoland scenario")
     parser.add_argument("--seed", type=int, default=0, help="The random seed")
     parser.add_argument("--save-dir", help="The directory to save everything in", default=None)
     parser.add_argument("--data-dir", help="The directory with image data should contain a states.csv and images directory", default=None)
