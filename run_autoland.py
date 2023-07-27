@@ -7,19 +7,19 @@ from xplane_autoland.controllers.glideslope_controller import GlideSlopeControll
 from xplane_autoland.xplane_connect.driver import XPlaneDriver
 
 # Evaluating network as sidecar
-from xplane_autoland.vision.perception import AutolandPerceptionModel
-import mss
-from PIL import Image
-import torch
-from torchvision import transforms
+# from xplane_autoland.vision.perception import AutolandPerceptionModel
+# import mss
+# from PIL import Image
+# import torch
+# from torchvision import transforms
 
 if __name__ == '__main__':
 
     # Need to stop and take image
-    model = AutolandPerceptionModel(resnet_version="50")
-    model.load("/home/ma25944/github_repos/XPlaneAutolandScenario/src/xplane_autoland/vision/models/2023-7-24/best_model_params.pt")
-    model.eval()
-    sct = mss.mss()
+    # model = AutolandPerceptionModel(resnet_version="50")
+    # model.load("/home/ma25944/github_repos/XPlaneAutolandScenario/src/xplane_autoland/vision/models/2023-7-24/best_model_params.pt")
+    # model.eval()
+    # sct = mss.mss()
 
 
     plane = XPlaneDriver()
@@ -39,19 +39,19 @@ if __name__ == '__main__':
             state = plane.get_statevec()
             phi, theta, psi, x, y, h = state[-6:]
 
-            plane.pause(True)
-            sct_img = sct.grab(sct.monitors[1])
-            pil_img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
-            img = to_tensor(pil_img)
-            img = model.preprocess(img)
-            orient_alt = torch.FloatTensor([phi, theta, psi, h])
-            img, orient_alt = img[None, :, :, :], orient_alt[None, :]
-            with torch.no_grad():
-                pred_x, pred_y = model(img, orient_alt).flatten()
-                pred_x *= 12464
-                pred_y *= 500
-            print(f"Error: x={x-pred_x}, y={y-pred_y}")
-            plane.pause(False)
+            # plane.pause(True)
+            # sct_img = sct.grab(sct.monitors[1])
+            # pil_img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+            # img = to_tensor(pil_img)
+            # img = model.preprocess(img)
+            # orient_alt = torch.FloatTensor([phi, theta, psi, h])
+            # img, orient_alt = img[None, :, :, :], orient_alt[None, :]
+            # with torch.no_grad():
+            #     pred_x, pred_y = model(img, orient_alt).flatten()
+            #     pred_x *= 12464
+            #     pred_y *= 500
+            # print(f"Error: x={x-pred_x}, y={y-pred_y}")
+            # plane.pause(False)
 
             elevator, aileron, rudder, throttle = gsc.control(state)
             # the runway slopes down so this works fine
