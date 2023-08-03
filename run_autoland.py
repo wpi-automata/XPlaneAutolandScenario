@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     dt = 0.1
     max_time = 300
-    to_tensor = transforms.PILToTensor()
+    # to_tensor = transforms.PILToTensor()
 
     gsc = GlideSlopeController(gamma=3, dt=dt)
 

@@ -12,15 +12,18 @@ from xplane_autoland.xplane_connect.driver import XPlaneDriver
 from xplane_autoland.controllers.glideslope_controller import GlideSlopeController
 
 
-dphi_sweep   = [-5, -2, 0, 2, 5]
-dtheta_sweep = [-5, -2, 0, 2, 5]
-dpsi_sweep   = [-5, -2, 0, 2, 5]
-dx_sweep     = np.arange(-100, 101, 20)
-dy_sweep     = np.arange(-100, 101, 20)
-dh_sweep     = np.arange(-100, 101, 20)
+# for sigmas, chosen so that rarely ever goes beyond given value
+# dividing by 3 so that 3sigma is a bit of a bound
+max_degrees   = 10.
+dphi_sigma    = max_degrees/3
+dtheta_sigma  = max_degrees/3
+dpsi_sigma    = max_degrees/3
+dx_bounds     = [-100, 100]
+dy_bounds     = [-100, 100]
+dh_bounds     = [-100, 100]
 
 
-def data_for_x(driver, x_center, prob, save_dir="data"):
+def data_for_x(driver, x_center, num_samples, save_dir="data"):
     print(f"Saving data for x={x_center}")
     gsc    = GlideSlopeController(gamma=3)
 
@@ -36,31 +39,32 @@ def data_for_x(driver, x_center, prob, save_dir="data"):
 
     f = open(str(statepath), 'a')
     writer = csv.writer(f)
-    writer.writerow([-1, -1, -1, -1, -1, -1, "divider"])
+    entries = set()
     sct = mss.mss()
 
     try:
         # sample points around the glideslope
         h_center = slope * x_center + h_thresh
         print(f"Base h = {h_center}")
-        for dphi, dtheta, dpsi, dx, dy, dh in itertools.product(dphi_sweep,
-                                                                dtheta_sweep,
-                                                                dpsi_sweep,
-                                                                dx_sweep,
-                                                                dy_sweep,
-                                                                dh_sweep):
-            if h_center+dh < h_thresh:
-                continue
-            elif x_center+dx < 0:
-                continue
-            elif random.random() > prob:
+        n = 0
+        while n < num_samples:
+            dphi = random.normalvariate(0., dphi_sigma)
+            dtheta = random.normalvariate(0., dtheta_sigma)
+            dpsi = random.normalvariate(0., dpsi_sigma)
+            dx = float(random.randint(*dx_bounds))
+            dy = float(random.randint(*dy_bounds))
+            dh = float(random.randint(*dh_bounds))
+            if h_center+dh < gsc._runway_elev:
                 continue
 
             driver.reset()
             # set time to 8am
             driver._client.sendDREF("sim/time/zulu_time_sec", 8 * 3600 + 8 * 3600)
 
-            orient_pos = [dphi, dtheta, dpsi, x_center+dx, dy, h_center+dh]
+            orient_pos = (dphi, dtheta, dpsi, x_center+dx, dy, h_center+dh)
+            if orient_pos in entries:
+                continue
+            entries.add(orient_pos)
             driver.set_orient_pos(*orient_pos)
             state = driver.get_statevec()
             actual_orient_pos = state[-6:]
@@ -79,6 +83,7 @@ def data_for_x(driver, x_center, prob, save_dir="data"):
             sct.shot(mon=1, output=fname)
             phi, theta, psi, x, y, h = actual_orient_pos
             writer.writerow([phi, theta, psi, x, y, h, fname])
+            n += 1
             time.sleep(0.001)
     except KeyboardInterrupt:
         print('Interrupted.', flush=True)
@@ -98,7 +103,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Sample training data for a vision-based state estimator")
     parser.add_argument("x_center", type=float, help="Which x value to collect data around")
     parser.add_argument("--seed", type=int, help="Set the random seed", default=1)
-    parser.add_argument("--prob", type=float, help="Probability of saving a particular configuration", default=0.1)
+    parser.add_argument("--num-samples", type=float, help="How many samples to collect for this value of x", default=200)
     args = parser.parse_args()
 
     random.seed(args.seed)
@@ -110,18 +115,14 @@ if __name__ == '__main__':
     time.sleep(4)
     print('Starting...')
 
-    save_dir = "data"
+    save_dir = Path("./data")
+    if not save_dir.exists():
+        save_dir.mkdir()
+    images_dir = save_dir / "images"
+    if not images_dir.exists():
+        images_dir.mkdir()
     with open(f"./{save_dir}/config.txt", "w") as f:
         f.write(f"Save Directory: {save_dir}\n")
         f.write(f"Seed: {args.seed}\n")
-        f.write(f"Prob: {args.prob}\n")
-        f.write("\n")
-        f.write("Sweep Values:\n")
-        f.write(f"dphi_sweep: {dphi_sweep}\n")
-        f.write(f"dtheta_sweep: {dtheta_sweep}\n")
-        f.write(f"dpsi_sweep: {dpsi_sweep}\n")
-        f.write(f"dx_sweep: {dx_sweep}\n")
-        f.write(f"dy_sweep: {dy_sweep}\n")
-        f.write(f"dh_sweep: {dh_sweep}\n")
 
-    data_for_x(driver, args.x_center, prob=args.prob, save_dir=save_dir)
+    data_for_x(driver, args.x_center, args.num_samples, save_dir=save_dir)
