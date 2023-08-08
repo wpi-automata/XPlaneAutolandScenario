@@ -163,6 +163,8 @@ if __name__ == '__main__':
     parser.add_argument("--resnet-version", help="Choose which resnet to use", default="50", choices=["18", "50"])
     parser.add_argument("--fixed-lr", action="store_true", help="Don't vary the learning rate")
     parser.add_argument("--num-epochs", type=int, help="The number of epochs to run", default=300)
+    parser.add_argument("--unfreeze", action="store_true", help="Don't freeze the backbone")
+    parser.add_argument("--start-model", help="The model to load in first", default=None)
     args = parser.parse_args()
 
     save_dir = args.save_dir
@@ -185,7 +187,11 @@ if __name__ == '__main__':
     logger.info(f"Using ResNet{args.resnet_version}")
 
     # Step 1: Initialize model with the best available weights
-    model = AutolandPerceptionModel(resnet_version=args.resnet_version)
+    model = AutolandPerceptionModel(resnet_version=args.resnet_version,
+                                    freeze=not args.unfreeze)
+    if args.start_model is not None:
+        print(f"Loading model from: {args.start_model}")
+        model.load(args.start_model)
 
     # Collect the dataset
     data_dir = args.data_dir
@@ -208,4 +214,5 @@ if __name__ == '__main__':
     lr = 1e-6 if args.fixed_lr else 1e-3
     optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.9, 0.999))
     scheduler = None if args.fixed_lr else lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
-    train_model(model, criterion, optimizer, dataloaders, dataset_sizes, logger, save_dir, num_epochs=args.num_epochs, scheduler=scheduler)
+    train_model(model, criterion, optimizer, dataloaders, dataset_sizes, logger, save_dir, 
+                num_epochs=args.num_epochs, scheduler=scheduler)

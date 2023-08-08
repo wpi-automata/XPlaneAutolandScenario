@@ -3,7 +3,7 @@ from torch import nn
 from torchvision.models import resnet18, ResNet18_Weights, resnet50, ResNet50_Weights
 
 class AutolandPerceptionModel(nn.Module):
-    def __init__(self, resnet_version="50"):
+    def __init__(self, resnet_version="50", freeze=True):
         super(AutolandPerceptionModel, self).__init__()
         if str(resnet_version) == "50":
             resnet = resnet50
@@ -15,9 +15,10 @@ class AutolandPerceptionModel(nn.Module):
             raise ValueError(f"Unrecognized resnet version: {resnet_version}")
         self.transform = weights.transforms(antialias=True)
         self.resnet = resnet(weights=weights)
-        # freeze all the layers
-        for param in self.resnet.parameters():
-            param.requires_grad = False
+        if freeze:
+            # freeze all the layers
+            for param in self.resnet.parameters():
+                param.requires_grad = False
 
         # replace the last layer (same number of features but this resets the weights
         # and resets requires_grad to True)
