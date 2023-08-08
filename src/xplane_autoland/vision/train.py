@@ -190,7 +190,7 @@ if __name__ == '__main__':
     model = AutolandPerceptionModel(resnet_version=args.resnet_version,
                                     freeze=not args.unfreeze)
     if args.start_model is not None:
-        print(f"Loading model from: {args.start_model}")
+        logger.info(f"Loading model from: {args.start_model}")
         model.load(args.start_model)
 
     # Collect the dataset
