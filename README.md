@@ -17,9 +17,16 @@ pip install -e .
 
 Download and install X-Plane 11 from [here](https://www.x-plane.com/desktop/try-it/older/).
 
+### XPlaneConnect
 Set up `XPlaneConnect` for communicating with `X-Plane` via `Python`.
 Download `XPlaneConnect` version 1.2.0 from the [releases](https://github.com/nasa/XPlaneConnect/releases).
-Navigate to X-Plane 11/Resources/plugins and extract the downloaded zip to this location.
+Navigate to `X-Plane 11/Resources/plugins` and extract the downloaded zip to this location.
+
+### XCamera
+Download `XCamera` from [here](https://stickandrudderstudios.com/x-camera/download-x-camera/) and extract to `X-Plane 11/Resources/plugins`.
+From the plugins drop down menu, you can select XCamera and use the control panel to create and place different camera views.
+
+### Run Autolander
 
 Launch X-Plane 11 and start a flight with a Cessna Skyhawk at Grant Co Airport (KMWH).
-Run `run_autoland.py` from within the virtual environment.
+Run `run_autoland.py` from within the Python virtual environment. This will land the plane using perfect state information.
