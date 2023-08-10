@@ -3,8 +3,10 @@ name = "xplane_autoland"
 version = "0.1.0"
 description = "A package for running an autoland scenario in X-Plane 11"
 dependencies = [
+    "matplotlib", # optional
     "pandas",
-    "scipy"
+    "scipy",
+    "tensorboard" # optional
 ]
 
 [build-system]
