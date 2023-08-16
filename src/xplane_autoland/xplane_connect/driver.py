@@ -25,17 +25,19 @@ class XPlaneDriver:
         self._R = np.array([[ np.cos(self._rotrad), -np.sin(self._rotrad) ],
                             [ np.sin(self._rotrad),  np.cos(self._rotrad)]])
 
-    def reset(self, cteInit=0, heInit=0, dtpInit=0, noBrake=True):
+    def reset(self, init_heading=0, init_downtrack=12464, init_elev=None, noBrake=True):
         """
             Resets the aircraft and resets forces, fuel, etc.
 
             Args:
-                cteInit: initial crosstrack error (meters)
-                heInit: initial heading error (degrees)
-                dtpInit: initial downtrack position (meters)
+                init_heading: initial heading error (degrees)
+                init_downtrack: initial downtrack position (meters)
         """
 
         self._client.pauseSim(True)
+
+        if init_elev is None:
+            init_elev = self._start_elev
 
         # Turn off joystick "+" mark from screen
         self._client.sendDREF("sim/operation/override/override_joystick", 1)
@@ -61,7 +63,7 @@ class XPlaneDriver:
         # Set position and orientation
         # Set known good start values
         # Note: setting position with lat/lon gets you within 0.3m. Setting local_x, local_z is more accurate)
-        self.set_orient_pos(0., 0., 0., 12464, 0., self._start_elev)
+        self.set_orient_pos(0., 0., 0., init_downtrack, 0., init_elev)
 
         # Fix the plane if you "crashed" or broke something
         self._client.sendDREFs(["sim/operation/fix_all_systems"], [1])
@@ -70,7 +72,7 @@ class XPlaneDriver:
         self._client.sendDREF("sim/flightmodel/engine/ENGN_mixt", 0.61)
 
         # Set speed of aircraft to be 60 m/s in current heading direction
-        heading = self._home_heading - heInit
+        heading = self._home_heading - init_heading
         self._client.sendDREF("sim/flightmodel/position/local_vx", 60.0*np.sin(heading*np.pi/180.0))
         self._client.sendDREF("sim/flightmodel/position/local_vz", -60.0*np.cos(heading*np.pi/180.0))
 
@@ -115,7 +117,12 @@ class XPlaneDriver:
     # by default these are passthroughs -- can be overloaded in a subclass
     ###########################################################################
     def est_statevec(self):
-        return self.get_statevec()
+        vel  = self.est_vel_state()
+        ovel = self.est_orient_vel_state()
+        o    = self.est_orient_state()
+        pos  = self.est_pos_state()
+
+        return np.stack((vel, ovel, o, pos)).flatten()
 
     def est_vel_state(self):
         return self.get_vel_state()
