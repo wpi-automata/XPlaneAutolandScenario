@@ -11,6 +11,7 @@ import numpy as np
 import os
 from pathlib import Path
 import random
+import sys
 import time
 import torch
 import torch.nn as nn
@@ -180,6 +181,7 @@ if __name__ == '__main__':
         save_dir.mkdir()
 
     logger = get_logger(save_dir)
+    logger.info(f"Full command-line arguments: {sys.argv}")
     logger.info(f"Setting seed to: {args.seed}")
     set_all_seeds(args.seed)
 
