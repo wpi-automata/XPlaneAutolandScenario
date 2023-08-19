@@ -8,19 +8,29 @@ import random
 import time
 from tqdm import tqdm
 
+from PIL import Image
+import torch
+from torchvision import transforms
+
 from xplane_autoland.xplane_connect.driver import XPlaneDriver
 from xplane_autoland.controllers.glideslope_controller import GlideSlopeController
+from xplane_autoland.vision.perception import AutolandPerceptionModel
 
 
 # for sigmas, chosen so that rarely ever goes beyond given value
 # dividing by 3 so that 3sigma is a bit of a bound
-max_degrees   = 10.
+max_degrees   = 15.
 dphi_sigma    = max_degrees/3
 dtheta_sigma  = max_degrees/3
 dpsi_sigma    = max_degrees/3
-dx_bounds     = [-100, 100]
-dy_bounds     = [-100, 100]
-dh_bounds     = [-100, 100]
+dx_bounds     = [-150, 150]
+dy_bounds     = [-150, 150]
+dh_bounds     = [-150, 150]
+
+
+model = AutolandPerceptionModel()
+transform = model.preprocess
+to_tensor = transforms.PILToTensor()
 
 
 def data_for_x(driver, x_center, num_samples, save_dir="data"):
@@ -57,7 +67,9 @@ def data_for_x(driver, x_center, num_samples, save_dir="data"):
             if h_center+dh < gsc._runway_elev:
                 continue
 
-            driver.reset()
+            if n % 100 == 0:
+                driver.reset()
+                time.sleep(10)
             # set time to 8am
             driver._client.sendDREF("sim/time/zulu_time_sec", 8 * 3600 + 8 * 3600)
 
@@ -66,6 +78,7 @@ def data_for_x(driver, x_center, num_samples, save_dir="data"):
                 continue
             entries.add(orient_pos)
             driver.set_orient_pos(*orient_pos)
+            time.sleep(0.25)
             state = driver.get_statevec()
             actual_orient_pos = state[-6:]
             abs_diff = np.abs(orient_pos - actual_orient_pos)
@@ -79,12 +92,16 @@ def data_for_x(driver, x_center, num_samples, save_dir="data"):
                 print(f'Actual: {actual_orient_pos}')
             nv_pairs = zip(['phi', 'theta', 'psi', 'x', 'y', 'h'], actual_orient_pos)
             statestr = '_'.join([p0 + str(int(p1)) for p0, p1 in nv_pairs])
-            fname = f'./{save_dir}/images/image_{statestr}.png'
-            sct.shot(mon=1, output=fname)
+            fname = f'./{save_dir}/images/image_{statestr}.pt'
+            sct_img = sct.grab(sct.monitors[1])
+            pil_img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+            img = to_tensor(pil_img)
+            img = transform(img)
+            torch.save(img, fname)
             phi, theta, psi, x, y, h = actual_orient_pos
             writer.writerow([phi, theta, psi, x, y, h, fname])
             n += 1
-            time.sleep(0.001)
+            time.sleep(0.15)
     except KeyboardInterrupt:
         print('Interrupted.', flush=True)
 
@@ -103,7 +120,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Sample training data for a vision-based state estimator")
     parser.add_argument("x_center", type=float, help="Which x value to collect data around")
     parser.add_argument("--seed", type=int, help="Set the random seed", default=1)
-    parser.add_argument("--num-samples", type=float, help="How many samples to collect for this value of x", default=200)
+    parser.add_argument("--num-samples", type=float, help="How many samples to collect for this value of x", default=600)
     args = parser.parse_args()
 
     random.seed(args.seed)
