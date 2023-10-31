@@ -11,6 +11,7 @@ import numpy as np
 import os
 from pathlib import Path
 import random
+import sys
 import time
 import torch
 import torch.nn as nn
@@ -167,10 +168,14 @@ if __name__ == '__main__':
     parser.add_argument("--start-model", help="The model to load in first", default=None)
     args = parser.parse_args()
 
+    this_dir = Path(__file__).parent
+    # the top-level repository directory
+    repo_dir = (this_dir / ".." / ".." / "..").resolve()
+
     save_dir = args.save_dir
     if save_dir is None:
         today = date.today()
-        save_dir = f"./models/{today.year}-{today.month}-{today.day}"
+        save_dir = f"{repo_dir}/models/{today.year}-{today.month}-{today.day}"
 
     save_dir = Path(save_dir)
     if save_dir.exists():
@@ -180,6 +185,7 @@ if __name__ == '__main__':
         save_dir.mkdir()
 
     logger = get_logger(save_dir)
+    logger.info(f"Full command-line arguments: {sys.argv}")
     logger.info(f"Setting seed to: {args.seed}")
     set_all_seeds(args.seed)
 
@@ -196,7 +202,7 @@ if __name__ == '__main__':
     # Collect the dataset
     data_dir = args.data_dir
     if data_dir is None:
-        data_dir="./data-initial"
+        data_dir=str(repo_dir/"data")
     logger.info(f"Using data from: {data_dir}")
     full_dataset = AutolandImageDataset(f"{data_dir}/processed-states.csv", f"{data_dir}/images", transform=model.preprocess)
     train_size = int(0.8 * len(full_dataset))

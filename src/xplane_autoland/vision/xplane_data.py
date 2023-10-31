@@ -7,10 +7,11 @@ from torchvision.io import read_image
 import warnings
 
 class AutolandImageDataset(Dataset):
-    def __init__(self, annotations_file, img_dir, transform=None, target_transform=None):
+    def __init__(self, annotations_file, img_dir, transform=None, target_transform=None, load_png=False):
         self.img_labels = pd.read_csv(annotations_file)
         self.img_dir = img_dir
         self.transform = transform
+        self.load_png = load_png # if True loads an image, otherwise assumes it's a tensor
 
         # normalize with expected maximum values in meters
         # note: in practice can be larger, it will just map to a value > 1
@@ -32,7 +33,10 @@ class AutolandImageDataset(Dataset):
 
     def __getitem__(self, idx):
         img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, -1].split("/")[-1])
-        image = read_image(img_path)
+        if self.load_png:
+            image = read_image(img_path)
+        else:
+            image = torch.load(img_path)
         label = self.img_labels.iloc[idx, 3:5].to_numpy(dtype=np.float32)
         label = torch.from_numpy(label)
         orient_alt = np.zeros((4,), dtype=np.float32)

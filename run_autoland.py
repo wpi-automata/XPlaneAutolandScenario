@@ -1,57 +1,62 @@
 #!/usr/bin/env python3
+import argparse
 import math
 import sys
 import time
 
 from xplane_autoland.controllers.glideslope_controller import GlideSlopeController
+from xplane_autoland.xplane_connect.vision_driver import XPlaneVisionDriver
 from xplane_autoland.xplane_connect.driver import XPlaneDriver
-
-# Evaluating network as sidecar
-# from xplane_autoland.vision.perception import AutolandPerceptionModel
-# import mss
-# from PIL import Image
-# import torch
-# from torchvision import transforms
+from xplane_autoland.vision.perception import AutolandPerceptionModel
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Run the autoland scenario at KMWH Grant County International Airport Runway 04. You must start XPlane and choose the airport + a Cessna separately.")
+    parser.add_argument("--model", help="The path to model parameters (*.pt) for a vision network. Note must have XPlane fullscreen for screenshots", default=None)
+    args = parser.parse_args()
 
-    # Need to stop and take image
-    # model = AutolandPerceptionModel(resnet_version="50")
-    # model.load("/home/ma25944/github_repos/XPlaneAutolandScenario/src/xplane_autoland/vision/models/2023-7-24/best_model_params.pt")
-    # model.eval()
-    # sct = mss.mss()
+    WITH_VISION = False
+    if args.model:
+        WITH_VISION=True
+        model = AutolandPerceptionModel(resnet_version="50")
+        model.load(args.model)
+        model.eval()
+        plane = XPlaneVisionDriver(model)
+    else:
+        plane = XPlaneDriver()
 
-
-    plane = XPlaneDriver()
     plane.pause(True)
-    plane.reset()
 
     dt = 0.1
     max_time = 300
-    # to_tensor = transforms.PILToTensor()
 
     gsc = GlideSlopeController(gamma=3, dt=dt)
+    h_thresh = gsc._h_thresh
+    start_elev = plane._start_elev
+    slope = float(start_elev - h_thresh) / plane._start_ground_range
+
+    # distance from the runway crossing (decrease to start closer)
+    # vision mode works best at 9000m and less (up until right before landing)
+    # need to train more at higher distances and close up
+    x_val = 12464
+    init_h = slope * x_val + h_thresh
+    plane.reset(init_downtrack=x_val, init_elev=init_h)
+    plane.pause(False)
 
     try:
-        plane.pause(False)
         last_time = time.time()
         for step in range(math.ceil(max_time/dt)):
             state = plane.get_statevec()
             phi, theta, psi, x, y, h = state[-6:]
 
-            # plane.pause(True)
-            # sct_img = sct.grab(sct.monitors[1])
-            # pil_img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
-            # img = to_tensor(pil_img)
-            # img = model.preprocess(img)
-            # orient_alt = torch.FloatTensor([phi, theta, psi, h])
-            # img, orient_alt = img[None, :, :, :], orient_alt[None, :]
-            # with torch.no_grad():
-            #     pred_x, pred_y = model(img, orient_alt).flatten()
-            #     pred_x *= 12464
-            #     pred_y *= 500
-            # print(f"Error: x={x-pred_x}, y={y-pred_y}")
-            # plane.pause(False)
+            if WITH_VISION:
+                plane.pause(True)
+                est_state = plane.est_statevec()
+                # uncomment to show difference
+                # print("x diff", x - est_state[-3])
+                # print("y diff", y - est_state[-2])
+                # use estimates
+                state[-3] = est_state[-3]
+                state[-2] = est_state[-2]
 
             elevator, aileron, rudder, throttle = gsc.control(state)
             # the runway slopes down so this works fine
@@ -60,10 +65,8 @@ if __name__ == '__main__':
                 plane.send_ctrl(elevator, aileron, rudder, -1)
                 break
             plane.send_ctrl(elevator, aileron, rudder, throttle)
-            time_diff = dt - (time.time() - last_time)
-            if time_diff > 0:
-                time.sleep(time_diff)
-            last_time = time.time()
+            plane.pause(False)
+            time.sleep(dt)
 
         # run the simulation for 10 more seconds to complete landing
         for step in range(math.ceil(10/dt)):
