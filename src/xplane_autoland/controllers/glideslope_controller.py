@@ -91,3 +91,7 @@ class GlideSlopeController:
             elevator = max(elev, -15)/15
 
         return elevator, aileron, rudder, throttle
+
+    @property
+    def runway_threshold_height(self):
+        return self._h_thresh

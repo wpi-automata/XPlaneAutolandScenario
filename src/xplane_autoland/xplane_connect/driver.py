@@ -25,17 +25,27 @@ class XPlaneDriver:
         self._R = np.array([[ np.cos(self._rotrad), -np.sin(self._rotrad) ],
                             [ np.sin(self._rotrad),  np.cos(self._rotrad)]])
 
-    def reset(self, init_phi=0, init_theta=0, init_psi=0, init_x=12464, init_y=0, init_h=None, noBrake=True):
+    def reset(self,
+              init_u=60., init_v=0, init_w=0., init_p=0, init_q=0, init_r=0,
+              init_phi=0, init_theta=0, init_psi=0, init_x=12464, init_y=0, init_h=None,
+              noBrake=True):
         """
             Resets the aircraft and resets forces, fuel, etc.
 
-            Args (all in runway-aligned coordinates):
+            Args (all state variables):
+                init_u        - longitudinal velocity (m/s)
+                init_v        - lateral velocity (m/s)
+                init_w        - vertical velocity (m/s)
+                init_p        - roll rate (deg/s)
+                init_q        - pitch rate (deg/s)
+                init_r        - yaw rate (deg/s)
                 init_phi      - roll angle (deg)
                 init_theta    - pitch angle (deg)
                 init_psi      - initial heading (deg)
                 init_x        - horizontal distance (m)
                 init_y        - lateral deviation (m)
                 init_h        - aircraft altitude (m)
+            Note: if choose not to pass one, will be set to a nominal default value
         """
 
         self._client.pauseSim(True)
@@ -64,22 +74,17 @@ class XPlaneDriver:
         values = [0]*len(refs)
         self._client.sendDREFs(drefs,values)
 
-
         # Set position and orientation
         # Set known good start values
         # Note: setting position with lat/lon gets you within 0.3m. Setting local_x, local_z is more accurate)
         self.set_orient_pos(init_phi, init_theta, init_psi, init_x, init_y, init_h)
+        self.set_orientrate_vel(init_u, init_v, init_w, init_p, init_q, init_r)
 
         # Fix the plane if you "crashed" or broke something
         self._client.sendDREFs(["sim/operation/fix_all_systems"], [1])
 
         # Set fuel mixture for engine
         self._client.sendDREF("sim/flightmodel/engine/ENGN_mixt", 0.61)
-
-        # Set speed of aircraft to be 60 m/s in current heading direction
-        heading = self._home_heading - init_psi
-        self._client.sendDREF("sim/flightmodel/position/local_vx", 60.0*np.sin(heading*np.pi/180.0))
-        self._client.sendDREF("sim/flightmodel/position/local_vz", -60.0*np.cos(heading*np.pi/180.0))
 
         # Reset fuel levels
         self._client.sendDREFs(["sim/flightmodel/weight/m_fuel1","sim/flightmodel/weight/m_fuel2"],[232,232])
@@ -218,6 +223,19 @@ class XPlaneDriver:
         self._client.sendDREF('sim/flightmodel/position/theta', theta)
         self._client.sendDREF('sim/flightmodel/position/psi', self._to_local_heading(psi))
 
+    def set_orientrate_vel(self, u, v, w, p, q, r):
+        # 2d rotation and flip
+        uv = np.array([u, v]).reshape((2, 1))
+        hr = math.radians(self._home_heading)
+        R = np.array([[np.cos(hr), -np.sin(hr)],[np.sin(hr), np.cos(hr)]])
+        rot_uv = R@uv
+        # flip direction of longitudinal velocity to put in OpenGL coordinates
+        self._client.sendDREF('sim/flightmodel/position/local_vz', -rot_uv[0])
+        self._client.sendDREF('sim/flightmodel/position/local_vx', rot_uv[1])
+        self._client.sendDREF('sim/flightmodel/position/local_vy', w)
+        self._client.sendDREF('sim/flightmodel/position/P', p)
+        self._client.sendDREF('sim/flightmodel/position/Q', q)
+        self._client.sendDREF('sim/flightmodel/position/R', r)
     
     ###########################################################################
     # Helper functions

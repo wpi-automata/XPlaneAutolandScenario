@@ -30,7 +30,8 @@ if __name__ == '__main__':
     max_time = 300
 
     gsc = GlideSlopeController(gamma=3, dt=dt)
-    h_thresh = gsc._h_thresh
+    # the altitude of the runway threshold
+    h_thresh = gsc.runway_threshold_height
     start_elev = plane._start_elev
     slope = float(start_elev - h_thresh) / plane._start_ground_range
 
@@ -39,7 +40,7 @@ if __name__ == '__main__':
     # need to train more at higher distances and close up
     x_val = 12464
     init_h = slope * x_val + h_thresh
-    # see reset docstring for init variable semantics
+    # can set the state arbitrarily (see reset documentation for semantics)
     plane.reset(init_x=x_val, init_h=init_h)
     plane.pause(False)
 
