@@ -39,7 +39,8 @@ if __name__ == '__main__':
     # need to train more at higher distances and close up
     x_val = 12464
     init_h = slope * x_val + h_thresh
-    plane.reset(init_downtrack=x_val, init_elev=init_h)
+    # see reset docstring for init variable semantics
+    plane.reset(init_x=x_val, init_h=init_h)
     plane.pause(False)
 
     try:

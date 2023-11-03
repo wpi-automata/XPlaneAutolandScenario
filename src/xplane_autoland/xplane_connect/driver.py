@@ -25,19 +25,23 @@ class XPlaneDriver:
         self._R = np.array([[ np.cos(self._rotrad), -np.sin(self._rotrad) ],
                             [ np.sin(self._rotrad),  np.cos(self._rotrad)]])
 
-    def reset(self, init_heading=0, init_downtrack=12464, init_elev=None, noBrake=True):
+    def reset(self, init_phi=0, init_theta=0, init_psi=0, init_x=12464, init_y=0, init_h=None, noBrake=True):
         """
             Resets the aircraft and resets forces, fuel, etc.
 
-            Args:
-                init_heading: initial heading error (degrees)
-                init_downtrack: initial downtrack position (meters)
+            Args (all in runway-aligned coordinates):
+                init_phi      - roll angle (deg)
+                init_theta    - pitch angle (deg)
+                init_psi      - initial heading (deg)
+                init_x        - horizontal distance (m)
+                init_y        - lateral deviation (m)
+                init_h        - aircraft altitude (m)
         """
 
         self._client.pauseSim(True)
 
-        if init_elev is None:
-            init_elev = self._start_elev
+        if init_h is None:
+            init_h = self._start_elev
 
         # Turn off joystick "+" mark from screen
         self._client.sendDREF("sim/operation/override/override_joystick", 1)
@@ -60,10 +64,11 @@ class XPlaneDriver:
         values = [0]*len(refs)
         self._client.sendDREFs(drefs,values)
 
+
         # Set position and orientation
         # Set known good start values
         # Note: setting position with lat/lon gets you within 0.3m. Setting local_x, local_z is more accurate)
-        self.set_orient_pos(0., 0., 0., init_downtrack, 0., init_elev)
+        self.set_orient_pos(init_phi, init_theta, init_psi, init_x, init_y, init_h)
 
         # Fix the plane if you "crashed" or broke something
         self._client.sendDREFs(["sim/operation/fix_all_systems"], [1])
@@ -72,7 +77,7 @@ class XPlaneDriver:
         self._client.sendDREF("sim/flightmodel/engine/ENGN_mixt", 0.61)
 
         # Set speed of aircraft to be 60 m/s in current heading direction
-        heading = self._home_heading - init_heading
+        heading = self._home_heading - init_psi
         self._client.sendDREF("sim/flightmodel/position/local_vx", 60.0*np.sin(heading*np.pi/180.0))
         self._client.sendDREF("sim/flightmodel/position/local_vz", -60.0*np.cos(heading*np.pi/180.0))
 
@@ -185,6 +190,16 @@ class XPlaneDriver:
         return np.array([x, y, h])
 
     def set_orient_pos(self, phi, theta, psi, x, y, h):
+        '''
+        Set the orientation and position of the plane.
+        Args:
+            phi    - roll angle (deg)
+            theta  - pitch angle (deg)
+            psi    - yaw angle (deg)
+            x      - horizontal distance (m)
+            y      - lateral deviation (m)
+            h      - aircraft altitude (m)
+        '''
         # zero out orientation at first
         self._client.sendDREF('sim/flightmodel/position/phi', 0)
         self._client.sendDREF('sim/flightmodel/position/theta', 0)
