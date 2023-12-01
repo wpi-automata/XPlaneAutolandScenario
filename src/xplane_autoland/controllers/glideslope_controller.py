@@ -80,7 +80,7 @@ class GlideSlopeController:
         fu = self._u_pid(err_u) + 5000
         throttle = min(fu, 10000)/10000
 
-        h_c = self._h_thresh + x*self._tan_gamma
+        h_c = self.get_glideslope_height_at(x)
         err_h = h_c - h
         theta_c = self._theta_pid(err_h)
         elev = (theta_c - theta)*5 - 0.05*q
@@ -95,3 +95,6 @@ class GlideSlopeController:
     @property
     def runway_threshold_height(self):
         return self._h_thresh
+
+    def get_glideslope_height_at(self, x):
+        return self._h_thresh + x*self._tan_gamma
