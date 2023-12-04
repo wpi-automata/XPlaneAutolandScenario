@@ -126,7 +126,7 @@ class XPlaneDriver:
     # State estimation
     # by default these are passthroughs -- can be overloaded in a subclass
     ###########################################################################
-    def est_statevec(self):
+    def est_statevec(self, img):
         vel  = self.est_vel_state()
         ovel = self.est_orient_vel_state()
         o    = self.est_orient_state()
@@ -143,7 +143,7 @@ class XPlaneDriver:
     def est_orient_state(self):
         return self.get_orient_state()
 
-    def est_pos_state(self):
+    def est_pos_state(self, img):
         return self.get_pos_state()
 
     ###########################################################################

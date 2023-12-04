@@ -28,7 +28,17 @@ class AutolandPerceptionModel(nn.Module):
         self.fc_final = nn.Linear(self.fc1.out_features, 2)
 
     def forward(self, img, orient_alt):
+        #Had to remove a tensor dimension as img and orient_alt were each a dimension too large 
+        #Not sure if this is a potential source of error- not necessary when running run_autoland.py
+        img = torch.squeeze(img,1)
+        orient_alt = torch.squeeze(orient_alt,1)
+
+        #Debugger
+        #print(img.size())
         conv_out = self.resnet(img)
+        #More Debuggers
+        #print(conv_out.size())
+        #print(orient_alt.size())
         x = torch.cat((conv_out, orient_alt), dim=1)
         x = self.fc1(x)
         return self.fc_final(x)

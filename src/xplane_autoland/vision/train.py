@@ -138,7 +138,7 @@ def train_model(model, criterion, optimizer, dataloaders, dataset_sizes,
 
             if phase == 'val' and scheduler is not None:
                 scheduler.step(epoch_loss)
-                lr = optimizer.param_groups[0]["lr"]
+                lr = optimizer.param_groups[0]    #need to set the seed? ["lr"]
                 logger.info(f"LR: {lr}")
                 writer.add_scalar(f"LR", lr, epoch)
 
