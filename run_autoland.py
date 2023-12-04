@@ -38,7 +38,7 @@ if __name__ == '__main__':
     # distance from the runway crossing (decrease to start closer)
     # vision mode works best at 9000m and less (up until right before landing)
     # need to train more at higher distances and close up
-    x_val = 12464
+    x_val = 9000
     init_h = slope * x_val + h_thresh
     # can set the state arbitrarily (see reset documentation for semantics)
     plane.reset(init_x=x_val, init_h=init_h)
@@ -57,8 +57,8 @@ if __name__ == '__main__':
                 # print("x diff", x - est_state[-3])
                 # print("y diff", y - est_state[-2])
                 # use estimates
-                state[-3] = est_state[-3]
                 state[-2] = est_state[-2]
+                state[-1] = est_state[-1]
 
             elevator, aileron, rudder, throttle = gsc.control(state)
             # the runway slopes down so this works fine

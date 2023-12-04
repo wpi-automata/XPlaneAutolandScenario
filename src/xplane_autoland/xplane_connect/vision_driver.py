@@ -38,10 +38,10 @@ class XPlaneVisionDriver(XPlaneDriver):
 
         with torch.no_grad():
             label_mult = 150. # must match the normalization used in AutolandImageDataset when training network
-            pred_x, pred_y = self._state_estimator(img, orient_alt).flatten()
-            pred_x *= label_mult
-            pred_y *= label_mult
-        return pred_x, pred_y, h
+            y_err, h_err = self._state_estimator(img, orient_alt).flatten()
+            y_err *= label_mult
+            h_err *= label_mult
+        return y_err, h_err
 
 
 if __name__ == "__main__":

@@ -132,7 +132,7 @@ class XPlaneDriver:
         o    = self.est_orient_state()
         pos  = self.est_pos_state()
 
-        return np.stack((vel, ovel, o, pos)).flatten()
+        return np.concatenate((vel, ovel, o, pos))
 
     def est_vel_state(self):
         return self.get_vel_state()
