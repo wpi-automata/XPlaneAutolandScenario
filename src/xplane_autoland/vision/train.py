@@ -204,7 +204,7 @@ if __name__ == '__main__':
     if data_dir is None:
         data_dir=str(repo_dir/"data")
     logger.info(f"Using data from: {data_dir}")
-    full_dataset = AutolandImageDataset(f"{data_dir}/processed-states.csv", f"{data_dir}/images", transform=model.preprocess)
+    full_dataset = AutolandImageDataset(f"{data_dir}/processed-states.csv", f"{data_dir}/images")
     train_size = int(0.8 * len(full_dataset))
     val_size = len(full_dataset) - train_size
     logger.info(f"Dataset Train size: {train_size}, Val size: {val_size}")
