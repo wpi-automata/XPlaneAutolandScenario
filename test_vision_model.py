@@ -32,6 +32,7 @@ if __name__ == "__main__":
     model.load(args.model)
 
     print(f"Loading dataset from: {args.data_dir}")
+    # Note: not passing transform=model.preprocess because we save already preprocessed images
     dataset = AutolandImageDataset(f"{args.data_dir}/processed-states.csv", f"{args.data_dir}/images")
 
     sampler = torch.utils.data.RandomSampler(data_source=dataset, generator=G)
