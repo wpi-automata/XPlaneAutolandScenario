@@ -53,12 +53,13 @@ if __name__ == '__main__':
             if WITH_VISION:
                 plane.pause(True)
                 est_state = plane.est_statevec()
+                state[-1] = gsc.get_glideslope_height_at(x) - h
                 # uncomment to show difference
-                # print("x diff", x - est_state[-3])
-                # print("y diff", y - est_state[-2])
+                print("y diff", y - est_state[-2])
+                print("herr diff", state[-1] - (est_state[-1]+40))
                 # use estimates
                 state[-2] = est_state[-2]
-                state[-1] = est_state[-1]
+                state[-1] = est_state[-1] + 40
 
             elevator, aileron, rudder, throttle = gsc.control(state)
             # the runway slopes down so this works fine
