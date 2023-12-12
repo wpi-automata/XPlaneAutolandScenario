@@ -6,7 +6,10 @@ dependencies = [
     "matplotlib", # optional
     "pandas",
     "scipy",
-    "tensorboard" # optional
+    "tensorboard", # optional
+    "torch",
+    "torchvision",
+    "mss"
 ]
 
 [build-system]
