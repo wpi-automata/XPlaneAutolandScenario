@@ -50,10 +50,12 @@ if __name__ == '__main__':
             state = plane.get_statevec()
             phi, theta, psi, x, y, h = state[-6:]
 
+            # using h_err in state now
+            state[-1] = gsc.get_glideslope_height_at(x) - h
+
             if WITH_VISION:
                 plane.pause(True)
                 est_state = plane.est_statevec()
-                state[-1] = gsc.get_glideslope_height_at(x) - h
                 # uncomment to show difference
                 print("y diff", y - est_state[-2])
                 print("herr diff", state[-1] - est_state[-1])
@@ -63,9 +65,10 @@ if __name__ == '__main__':
 
             elevator, aileron, rudder, throttle = gsc.control(state)
             # the runway slopes down so this works fine
-            if h <= gsc.runway_elevation:
+            if h <= gsc.runway_elevation and x <= 0:
                 # disable throttle once you've landed
-                plane.send_ctrl(elevator, aileron, rudder, -1)
+                plane.send_ctrl(0, 0, 0, -1)
+                print("Reached end condition, breaking from loop")
                 break
             plane.send_ctrl(elevator, aileron, rudder, throttle)
             plane.pause(False)
@@ -78,7 +81,7 @@ if __name__ == '__main__':
             elevator, aileron, rudder, _ = gsc.control(state)
             throttle = -1
             plane.send_brake(1)
-            plane.send_ctrl(elevator, aileron, rudder, throttle)
+            plane.send_ctrl(0, 0, rudder, 0)
             time.sleep(dt)
 
         print('Done')
