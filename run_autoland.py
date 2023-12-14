@@ -27,7 +27,7 @@ if __name__ == '__main__':
     plane.pause(True)
 
     dt = 0.1
-    max_time = 300
+    max_time = 600
 
     gsc = GlideSlopeController(gamma=3, dt=dt)
     # the altitude of the runway threshold
@@ -57,8 +57,8 @@ if __name__ == '__main__':
                 plane.pause(True)
                 est_state = plane.est_statevec()
                 # uncomment to show difference
-                print("y diff", y - est_state[-2])
-                print("herr diff", state[-1] - est_state[-1])
+                # print("y diff", y - est_state[-2])
+                # print("herr diff", state[-1] - est_state[-1])
                 # use estimates
                 state[-2] = est_state[-2]
                 state[-1] = est_state[-1]
@@ -68,24 +68,25 @@ if __name__ == '__main__':
             if h <= gsc.runway_elevation and x <= 0:
                 # disable throttle once you've landed
                 plane.send_ctrl(0, 0, 0, -1)
-                print("Reached end condition, breaking from loop")
+                print("Successfully landed")
+                plane.pause(False)
+                # run the simulation for 10 more seconds to complete landing
+                for step in range(math.ceil(10/dt)):
+                    state = plane.get_statevec()
+                    # use the controller to keep it straight
+                    elevator, aileron, rudder, _ = gsc.control(state)
+                    throttle = -1
+                    plane.send_brake(1)
+                    plane.send_ctrl(0, 0, rudder, 0)
+                    time.sleep(dt)
                 break
             plane.send_ctrl(elevator, aileron, rudder, throttle)
             plane.pause(False)
             time.sleep(dt)
 
-        # run the simulation for 10 more seconds to complete landing
-        for step in range(math.ceil(10/dt)):
-            state = plane.get_statevec()
-            # use the controller to keep it straight
-            elevator, aileron, rudder, _ = gsc.control(state)
-            throttle = -1
-            plane.send_brake(1)
-            plane.send_ctrl(0, 0, rudder, 0)
-            time.sleep(dt)
-
         print('Done')
-        plane.pause(False)
+        plane.pause(True)
+        h = input("Press any key to end.")
     except KeyboardInterrupt:
         print('Interrupted -- Pausing sim and exiting')
         plane.pause(True)
