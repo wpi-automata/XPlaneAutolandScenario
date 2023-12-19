@@ -16,15 +16,18 @@ pip install -e .
 ```
 
 Download and install X-Plane 11 from [here](https://www.x-plane.com/desktop/try-it/older/).
+Note: the rest of the instructions assume that X-Plane is installed in the default location, `~/X-Plane 11/`.
 
 ### XPlaneConnect
 Set up `XPlaneConnect` for communicating with `X-Plane` via `Python`.
 Download `XPlaneConnect` version 1.2.0 from the [releases](https://github.com/nasa/XPlaneConnect/releases).
-Navigate to `X-Plane 11/Resources/plugins` and extract the downloaded zip to this location.
+Note: download the main asset, not the source code.
+Extract the downloaded files to `~/X-Plane 11/Resources/plugins`.
 
 ### XCamera
-Download `XCamera` from [here](https://stickandrudderstudios.com/x-camera/download-x-camera/) and extract to `X-Plane 11/Resources/plugins`.
+Download `X-Camera` from [here](https://stickandrudderstudios.com/x-camera/download-x-camera/) and extract to `X-Plane 11/Resources/plugins`.
 From the plugins drop down menu, you can select XCamera and use the control panel to create and place different camera views.
+Next, copy `./metadata/X-Camera_Cessna_172SP.csv` to `~/X-Plane 11/Aircraft/Laminar Research/Cessna 172SP/`. This defines the camera location used to train vision networks.
 
 ### Run Autolander
 
