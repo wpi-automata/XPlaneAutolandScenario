@@ -26,6 +26,13 @@ class XPlaneVisionDriver(XPlaneDriver):
         self._sct = mss.mss()
 
     def est_pos_state(self):
+        """
+        Estimates the position state using a vision network
+
+        Returns:
+            y -- lateral deviation
+            err_h -- error in height relative to a glideslope
+        """
         sct_img = self._sct.grab(self._sct.monitors[1])
         pil_img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
         img = to_tensor(pil_img)
@@ -41,7 +48,7 @@ class XPlaneVisionDriver(XPlaneDriver):
             y_err, h_err = self._state_estimator(img, orient_alt).flatten()
             y_err *= label_mult
             h_err *= label_mult
-        return y_err, h_err
+        return y_err.item(), h_err.item()
 
 
 if __name__ == "__main__":

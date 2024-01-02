@@ -35,7 +35,7 @@ class GlideSlopeController:
         '''
         return self._runway_elev
 
-    def control(self, statevec):
+    def control(self, statevec, err_h=None):
         '''
         INPUTS
             Statevector based on https://arc.aiaa.org/doi/10.2514/6.2021-0998
@@ -52,6 +52,10 @@ class GlideSlopeController:
                 x      - horizontal distance (m)
                 y      - lateral deviation (m)
                 h      - aircraft altitude (m)
+            err_h
+                The error in height
+                If not provided, it will be calculated based on glideslope angle gamma, x, and h
+                This option is for the vision network which directly predicts height error rather than runway distance x
         OUTPUTS
             throttle
             elevator
@@ -62,7 +66,7 @@ class GlideSlopeController:
         u, v, w, \
         p, q, r, \
         phi, theta, psi, \
-        x, y, err_h = statevec
+        x, y, h = statevec
 
         # lateral control
         err_y = 0.0 - y
@@ -80,8 +84,9 @@ class GlideSlopeController:
         fu = self._u_pid(err_u) + 5000
         throttle = min(fu, 10000)/10000
 
-        # h_c = self.get_glideslope_height_at(x)
-        # err_h = h_c - err_h
+        if err_h is None:
+            h_c = self.get_glideslope_height_at(x)
+            err_h = h_c - h
         theta_c = self._theta_pid(err_h)
         elev = (theta_c - theta)*5 - 0.05*q
 

@@ -49,21 +49,16 @@ if __name__ == '__main__':
         for step in range(math.ceil(max_time/dt)):
             state = plane.get_statevec()
             phi, theta, psi, x, y, h = state[-6:]
-
-            # using h_err in state now
-            state[-1] = gsc.get_glideslope_height_at(x) - h
+            err_h = None
 
             if WITH_VISION:
                 plane.pause(True)
-                est_state = plane.est_statevec()
-                # uncomment to show difference
-                # print("y diff", y - est_state[-2])
-                # print("herr diff", state[-1] - est_state[-1])
-                # use estimates
-                state[-2] = est_state[-2]
-                state[-1] = est_state[-1]
+                y, err_h = plane.est_pos_state()
+                # update state vector with y estimate
+                # err_h will be used directly
+                state[-2] = y
 
-            elevator, aileron, rudder, throttle = gsc.control(state)
+            elevator, aileron, rudder, throttle = gsc.control(state, err_h=err_h)
             # the runway slopes down so this works fine
             if h <= gsc.runway_elevation and x <= 0:
                 # disable throttle once you've landed
