@@ -26,6 +26,13 @@ class XPlaneVisionDriver(XPlaneDriver):
         self._sct = mss.mss()
 
     def est_pos_state(self):
+        """
+        Estimates the position state using a vision network
+
+        Returns:
+            y -- lateral deviation
+            err_h -- error in height relative to a glideslope
+        """
         sct_img = self._sct.grab(self._sct.monitors[1])
         pil_img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
         img = to_tensor(pil_img)
@@ -37,10 +44,11 @@ class XPlaneVisionDriver(XPlaneDriver):
         img, orient_alt = img[None, :, :, :], orient_alt[None, :]
 
         with torch.no_grad():
-            pred_x, pred_y = self._state_estimator(img, orient_alt).flatten()
-            pred_x *= 1000
-            pred_y *= 1000
-        return pred_x, pred_y, h
+            label_mult = 150. # must match the normalization used in AutolandImageDataset when training network
+            y_err, h_err = self._state_estimator(img, orient_alt).flatten()
+            y_err *= label_mult
+            h_err *= label_mult
+        return y_err.item(), h_err.item()
 
 
 if __name__ == "__main__":
