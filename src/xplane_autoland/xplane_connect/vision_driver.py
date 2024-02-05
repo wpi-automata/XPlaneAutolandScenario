@@ -33,7 +33,7 @@ class XPlaneVisionDriver(XPlaneDriver):
             y -- lateral deviation
             err_h -- error in height relative to a glideslope
         """
-        sct_img = self._sct.grab(self._sct.monitors[1])
+        sct_img = self._sct.grab(self._sct.monitors[0]) # Monitor number to screen shot
         pil_img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
         img = to_tensor(pil_img)
         img = self._state_estimator.preprocess(img)
