@@ -200,15 +200,15 @@ class CBFController:
 
         # values for each specification in SI Units, taken from UMichigan paper
         u_c = 1.3
-        # u_l = 2.6
-        # u_u = 5.1
-        u_l = 10.
-        u_u = 10.
-        del_v = 5.#1.51
+        u_l = 2.6
+        u_u = 5.1
+        # u_l = 10.
+        # u_u = 10.
+        del_v = 1.51
         alpha = 3.
         alpha_rad = np.deg2rad(alpha)
         w_l = 0.
-        w_u = 10. #2.
+        w_u = 2.
         d_r = 3048.
         beta = 2.
         beta_rad = np.deg2rad(beta)
