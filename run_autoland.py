@@ -27,7 +27,7 @@ if __name__ == '__main__':
     plane.pause(True)
 
     dt = 0.1
-    max_time = 600
+    max_time = 300
 
     gsc = GlideSlopeController(gamma=3, dt=dt)
     # the altitude of the runway threshold
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     # distance from the runway crossing (decrease to start closer)
     # vision mode works best at 9000m and less (up until right before landing)
     # need to train more at higher distances and close up
-    x_val = 9000
+    x_val = 12464
     init_h = slope * x_val + h_thresh
     # can set the state arbitrarily (see reset documentation for semantics)
     plane.reset(init_x=x_val, init_h=init_h)
@@ -49,39 +49,39 @@ if __name__ == '__main__':
         for step in range(math.ceil(max_time/dt)):
             state = plane.get_statevec()
             phi, theta, psi, x, y, h = state[-6:]
-            err_h = None
 
             if WITH_VISION:
                 plane.pause(True)
-                y, err_h = plane.est_pos_state()
-                # update state vector with y estimate
-                # err_h will be used directly
-                state[-2] = y
+                est_state = plane.est_statevec()
+                # uncomment to show difference
+                # print("x diff", x - est_state[-3])
+                # print("y diff", y - est_state[-2])
+                # use estimates
+                state[-3] = est_state[-3]
+                state[-2] = est_state[-2]
 
-            elevator, aileron, rudder, throttle = gsc.control(state, err_h=err_h)
+            elevator, aileron, rudder, throttle = gsc.control(state)
             # the runway slopes down so this works fine
-            if h <= gsc.runway_elevation and x <= 0:
+            if h <= gsc.runway_elevation:
                 # disable throttle once you've landed
-                plane.send_ctrl(0, 0, 0, -1)
-                print("Successfully landed")
-                plane.pause(False)
-                # run the simulation for 10 more seconds to complete landing
-                for step in range(math.ceil(10/dt)):
-                    state = plane.get_statevec()
-                    # use the controller to keep it straight
-                    elevator, aileron, rudder, _ = gsc.control(state)
-                    throttle = -1
-                    plane.send_brake(1)
-                    plane.send_ctrl(0, 0, rudder, 0)
-                    time.sleep(dt)
+                plane.send_ctrl(elevator, aileron, rudder, -1)
                 break
             plane.send_ctrl(elevator, aileron, rudder, throttle)
             plane.pause(False)
             time.sleep(dt)
 
+        # run the simulation for 10 more seconds to complete landing
+        for step in range(math.ceil(10/dt)):
+            state = plane.get_statevec()
+            # use the controller to keep it straight
+            elevator, aileron, rudder, _ = gsc.control(state)
+            throttle = -1
+            plane.send_brake(1)
+            plane.send_ctrl(elevator, aileron, rudder, throttle)
+            time.sleep(dt)
+
         print('Done')
-        plane.pause(True)
-        h = input("Press any key to end.")
+        plane.pause(False)
     except KeyboardInterrupt:
         print('Interrupted -- Pausing sim and exiting')
         plane.pause(True)
