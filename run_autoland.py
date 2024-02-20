@@ -4,10 +4,10 @@ import math
 import sys
 import time
 
-from xplane_autoland.controllers.glideslope_controller import GlideSlopeController
-from xplane_autoland.xplane_connect.vision_driver import XPlaneVisionDriver
-from xplane_autoland.xplane_connect.driver import XPlaneDriver
-from xplane_autoland.vision.perception import AutolandPerceptionModel
+from src.xplane_autoland.controllers.glideslope_controller import GlideSlopeController
+from src.xplane_autoland.xplane_connect.vision_driver import XPlaneVisionDriver
+from src.xplane_autoland.xplane_connect.driver import XPlaneDriver
+from src.xplane_autoland.vision.perception import AutolandPerceptionModel
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run the autoland scenario at KMWH Grant County International Airport Runway 04. You must start XPlane and choose the airport + a Cessna separately.")
@@ -57,6 +57,7 @@ if __name__ == '__main__':
                 # update state vector with y estimate
                 # err_h will be used directly
                 state[-2] = y
+                # print("Y: %f", y_1)
 
             elevator, aileron, rudder, throttle = gsc.control(state, err_h=err_h)
             # the runway slopes down so this works fine

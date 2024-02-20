@@ -1,6 +1,6 @@
-from xplane_autoland.xplane_connect.driver import XPlaneDriver
+from src.xplane_autoland.xplane_connect.driver import XPlaneDriver
 
-from xplane_autoland.vision.perception import AutolandPerceptionModel
+from src.xplane_autoland.vision.perception import AutolandPerceptionModel
 import mss
 from PIL import Image
 import torch
@@ -48,6 +48,9 @@ class XPlaneVisionDriver(XPlaneDriver):
             y_err, h_err = self._state_estimator(img, orient_alt).flatten()
             y_err *= label_mult
             h_err *= label_mult
+            print("Got here")
+            print("Y: %f", y_err)
+
         return y_err.item(), h_err.item()
 
 

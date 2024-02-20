@@ -2,7 +2,7 @@ import math
 import numpy as np
 import time
 
-from xplane_autoland.xplane_connect.xpc3 import XPlaneConnect
+from src.xplane_autoland.xplane_connect.xpc3 import XPlaneConnect
 
 # Default values set for Rwy 04 of Grant Co. Airport
 # TODOs relate to generalizing for arbitrary airports

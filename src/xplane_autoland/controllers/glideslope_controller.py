@@ -1,4 +1,4 @@
-from xplane_autoland.utils.pid import PID
+from src.xplane_autoland.utils.pid import PID
 import math
 
 # TCH = Threshold Crossing Height
@@ -69,7 +69,7 @@ class GlideSlopeController:
         x, y, h = statevec
 
         # lateral control
-        err_y = 0.0 - y
+        err_y = 0.0 -y
         err_psi = 0.0 - psi
         err_phi = 0.0 - phi
 
@@ -85,6 +85,7 @@ class GlideSlopeController:
         throttle = min(fu, 10000)/10000
 
         if err_h is None:
+            print("No height value")
             h_c = self.get_glideslope_height_at(x)
             err_h = h_c - h
         theta_c = self._theta_pid(err_h)
