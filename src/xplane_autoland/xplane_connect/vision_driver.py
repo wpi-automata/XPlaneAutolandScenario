@@ -56,6 +56,6 @@ class XPlaneVisionDriver(XPlaneDriver):
 
 if __name__ == "__main__":
     model = AutolandPerceptionModel(resnet_version="50")
-    model.load("/home/ma25944/github_repos/XPlaneAutolandScenario/models/vision/2023-8-10/best_model_params.pt")
+    model.load("/home/colette/XPlaneAutolandScenario/models/2023-12-6/best_model_params.pt")
     model.eval()
     vision_driver = XPlaneVisionDriver(model)
