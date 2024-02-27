@@ -25,7 +25,7 @@ class XPlaneVisionDriver(XPlaneDriver):
         # Need to stop and take image
         self._sct = mss.mss()
 
-    def est_pos_state(self):
+    def est_pos_state(self, img, orient_alt):
         """
         Estimates the position state using a vision network
 
@@ -33,15 +33,15 @@ class XPlaneVisionDriver(XPlaneDriver):
             y -- lateral deviation
             err_h -- error in height relative to a glideslope
         """
-        sct_img = self._sct.grab(self._sct.monitors[1])
-        pil_img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
-        img = to_tensor(pil_img)
-        img = self._state_estimator.preprocess(img)
-        phi, theta, psi = self.est_orient_state()
-        _, _, h  = self.get_pos_state()
-        orient_alt = torch.FloatTensor([phi, theta, psi, h])
-        orient_alt /= self._orient_norm_divisor
-        img, orient_alt = img[None, :, :, :], orient_alt[None, :]
+        # sct_img = self._sct.grab(self._sct.monitors[1])
+        # pil_img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+        # img = to_tensor(pil_img)
+        # img = self._state_estimator.preprocess(img)
+        # phi, theta, psi = self.est_orient_state()
+        # _, _, h  = self.get_pos_state()
+        # orient_alt = torch.FloatTensor([phi, theta, psi, h])
+        # orient_alt /= self._orient_norm_divisor
+        # img, orient_alt = img[None, :, :, :], orient_alt[None, :]
 
         with torch.no_grad():
             label_mult = 150. # must match the normalization used in AutolandImageDataset when training network

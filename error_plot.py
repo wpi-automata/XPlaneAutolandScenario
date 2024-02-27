@@ -15,8 +15,8 @@ def combine_data(save_dir, repo_dir):
     f = open(str(statepath), 'a')
     writer = csv.writer(f)
 
-    with open(f"{repo_dir}/data/processed-states.csv") as states_file: #This needs to change 
-        with open(f"{repo_dir}/errors/2024-1-15/generated_states.csv") as gen_states_file:
+    with open(f"{repo_dir}/dataWPI_12464/states.csv") as states_file: #This needs to change 
+        with open(f"{repo_dir}/errors/2024-2-27/generated_states.csv") as gen_states_file:
             csv_reader1 = csv.reader(states_file, delimiter=',')
             csv_reader2 = csv.reader(gen_states_file, delimiter=',')
             line_count = 0

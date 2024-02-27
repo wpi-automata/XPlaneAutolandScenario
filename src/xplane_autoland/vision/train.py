@@ -202,7 +202,7 @@ if __name__ == '__main__':
     # Collect the dataset
     data_dir = args.data_dir
     if data_dir is None:
-        data_dir=str(repo_dir/"data")
+        data_dir=str(repo_dir/"dataWPI_12464")
     logger.info(f"Using data from: {data_dir}")
     full_dataset = AutolandImageDataset(f"{data_dir}/processed-states.csv", f"{data_dir}/images")
     train_size = int(0.8 * len(full_dataset))

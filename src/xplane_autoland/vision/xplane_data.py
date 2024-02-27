@@ -6,7 +6,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision.io import read_image
 import warnings
 
-from xplane_autoland.controllers.glideslope_controller import GlideSlopeController
+from src.xplane_autoland.controllers.glideslope_controller import GlideSlopeController
 
 class AutolandImageDataset(Dataset):
     def __init__(self, annotations_file, img_dir, transform=None, target_transform=None, load_png=False,

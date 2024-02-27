@@ -6,15 +6,15 @@ import numpy as np
 from pathlib import Path
 import random
 import time
-from tqdm import tqdm
+#from tqdm import tqdm
 
 from PIL import Image
 import torch
 from torchvision import transforms
 
-from xplane_autoland.xplane_connect.driver import XPlaneDriver
-from xplane_autoland.controllers.glideslope_controller import GlideSlopeController
-from xplane_autoland.vision.perception import AutolandPerceptionModel
+from src.xplane_autoland.xplane_connect.driver import XPlaneDriver
+from src.xplane_autoland.controllers.glideslope_controller import GlideSlopeController
+from src.xplane_autoland.vision.perception import AutolandPerceptionModel
 
 
 # for sigmas, chosen so that rarely ever goes beyond given value
@@ -33,7 +33,7 @@ transform = model.preprocess
 to_tensor = transforms.PILToTensor()
 
 
-def data_for_x(driver, x_center, num_samples, save_dir="data"):
+def data_for_x(driver, x_center, num_samples, save_dir):
     print(f"Saving data for x={x_center}")
     gsc    = GlideSlopeController(gamma=3)
 
@@ -109,11 +109,11 @@ def data_for_x(driver, x_center, num_samples, save_dir="data"):
     print(f'Last Image Name: {fname}')
 
 
-def sweep_x(driver, prob):
+def sweep_x(driver, num_samples, save_dir):
     # parameter sweeps
     x_sweep      = np.arange(0., driver._start_ground_range, 100.)
-    for x_center in range(x_sweep):
-        data_for_x(driver, x_center, prob=prob)
+    for x_center in x_sweep:
+        data_for_x(driver, x_center, num_samples, save_dir)
 
 
 if __name__ == '__main__':
@@ -132,7 +132,7 @@ if __name__ == '__main__':
     time.sleep(4)
     print('Starting...')
 
-    save_dir = Path("./data")
+    save_dir = Path("./dataWPI_12464")
     if not save_dir.exists():
         save_dir.mkdir()
     images_dir = save_dir / "images"
@@ -141,5 +141,5 @@ if __name__ == '__main__':
     with open(f"./{save_dir}/config.txt", "w") as f:
         f.write(f"Save Directory: {save_dir}\n")
         f.write(f"Seed: {args.seed}\n")
-
-    data_for_x(driver, args.x_center, args.num_samples, save_dir=save_dir)
+    sweep_x(driver, args.num_samples, save_dir=save_dir)
+    #data_for_x(driver, args.x_center, args.num_samples, save_dir=save_dir)
