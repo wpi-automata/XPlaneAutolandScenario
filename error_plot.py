@@ -15,8 +15,8 @@ def combine_data(save_dir, repo_dir):
     f = open(str(statepath), 'a')
     writer = csv.writer(f)
 
-    with open(f"{repo_dir}/dataWPI_12464/states.csv") as states_file: #This needs to change 
-        with open(f"{repo_dir}/errors/2024-2-27/generated_states.csv") as gen_states_file:
+    with open(f"{repo_dir}/data/processed-states.csv") as states_file: #This needs to change 
+        with open(f"{repo_dir}/errors/2024-3-3/generated_states.csv") as gen_states_file:
             csv_reader1 = csv.reader(states_file, delimiter=',')
             csv_reader2 = csv.reader(gen_states_file, delimiter=',')
             line_count = 0
@@ -36,7 +36,7 @@ def combine_data(save_dir, repo_dir):
                     line_count += 1
             print(f'Processed {line_count} lines.')
 
-def plot_data(repo_dir):
+def plot_data(repo_dir): #This has not been updated to new model since I switched over to MATLAB for plotting 
     #Eventually should save plots as files 
     # TODO Change plots to scatter and plot 3D against distance to runway(x)
 
@@ -186,4 +186,4 @@ if __name__ == '__main__':
         save_dir.mkdir()
     
     combine_data(save_dir, repo_dir)
-    #plot_data(repo_dir)
+    #plot_data(repo_dir) #Switched over to MATLAB for plotting 
