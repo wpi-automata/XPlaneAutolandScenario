@@ -1,4 +1,6 @@
-from src.xplane_autoland.utils.pid import PID
+import sys
+sys.path.append('/home/colette/XPlaneAutolandScenario/src/xplane_autoland')
+from utils.pid import PID
 import math
 
 # TCH = Threshold Crossing Height
@@ -69,7 +71,7 @@ class GlideSlopeController:
         x, y, h = statevec
 
         # lateral control
-        err_y = 0.0 -y
+        err_y = 0.0 - y
         err_psi = 0.0 - psi
         err_phi = 0.0 - phi
 

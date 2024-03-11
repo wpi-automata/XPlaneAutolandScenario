@@ -1,6 +1,8 @@
-from src.xplane_autoland.xplane_connect.driver import XPlaneDriver
+import sys
+sys.path.append('/home/colette/XPlaneAutolandScenario/src/xplane_autoland')
+from xplane_connect.driver import XPlaneDriver
 
-from src.xplane_autoland.vision.perception import AutolandPerceptionModel
+from vision.perception import AutolandPerceptionModel
 import mss
 from PIL import Image
 import torch
@@ -56,6 +58,6 @@ class XPlaneVisionDriver(XPlaneDriver):
 
 if __name__ == "__main__":
     model = AutolandPerceptionModel(resnet_version="50")
-    model.load("/home/colette/XPlaneAutolandScenario/models/2023-12-6/best_model_params.pt")
+    model.load("/home/colette/XPlaneAutolandScenario/models/2024-3-3/best_model_params.pt")
     model.eval()
     vision_driver = XPlaneVisionDriver(model)

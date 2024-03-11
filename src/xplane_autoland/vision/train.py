@@ -20,8 +20,8 @@ from torch.optim import lr_scheduler
 import torch.backends.cudnn as cudnn
 from torch.utils.tensorboard import SummaryWriter
 
-from xplane_autoland.vision.perception import AutolandPerceptionModel
-from xplane_autoland.vision.xplane_data import AutolandImageDataset
+from perception import AutolandPerceptionModel
+from xplane_data import AutolandImageDataset
 
 cudnn.benchmark = True
 plt.ion()   # interactive mode
@@ -157,7 +157,7 @@ def train_model(model, criterion, optimizer, dataloaders, dataset_sizes,
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Train a state estimator for the autoland scenario")
+    parser = argparse.ArgumentParser(description="Train a state essrc.xplane_autoland.timator for the autoland scenario")
     parser.add_argument("--seed", type=int, default=0, help="The random seed")
     parser.add_argument("--save-dir", help="The directory to save everything in", default=None)
     parser.add_argument("--data-dir", help="The directory with image data should contain a states.csv and images directory", default=None)
@@ -196,15 +196,16 @@ if __name__ == '__main__':
     model = AutolandPerceptionModel(resnet_version=args.resnet_version,
                                     freeze=not args.unfreeze)
     if args.start_model is not None:
+        print("Loading correct backbone")
         logger.info(f"Loading model from: {args.start_model}")
         model.load(args.start_model)
 
     # Collect the dataset
     data_dir = args.data_dir
     if data_dir is None:
-        data_dir=str(repo_dir/"data")
+        data_dir=str(repo_dir/"dataWPI_12464")
     logger.info(f"Using data from: {data_dir}")
-    full_dataset = AutolandImageDataset(f"{data_dir}/processed-states.csv", f"{data_dir}/images")
+    full_dataset = AutolandImageDataset(f"{data_dir}/states.csv", f"{data_dir}/images")
     train_size = int(0.8 * len(full_dataset))
     val_size = len(full_dataset) - train_size
     logger.info(f"Dataset Train size: {train_size}, Val size: {val_size}")
