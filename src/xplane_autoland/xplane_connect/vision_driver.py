@@ -41,8 +41,8 @@ class XPlaneVisionDriver(XPlaneDriver):
         # _, _, h  = self.get_pos_state()
         # orient_alt = torch.FloatTensor([phi, theta, psi, h])
         # orient_alt /= self._orient_norm_divisor
-        # img, orient_alt = img[None, :, :, :], orient_alt[None, :]
-
+        #img, orient_alt = img[None, :, :, :], orient_alt[None, :]
+        print(img.size())
         with torch.no_grad():
             label_mult = 150. # must match the normalization used in AutolandImageDataset when training network
             y_err, h_err = self._state_estimator(img, orient_alt).flatten()
