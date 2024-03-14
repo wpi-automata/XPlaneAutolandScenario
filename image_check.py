@@ -11,7 +11,7 @@ tensor4 = torch.load('/home/colette/XPlaneAutolandScenario/dataWPI_12464/images/
 
 
 
-transform = T.ToPILImage()
+transform = T.ToPILImage(mode = "RGB")
 
 img1 = transform(tensor1)
 # img2 = transform(tensor2)

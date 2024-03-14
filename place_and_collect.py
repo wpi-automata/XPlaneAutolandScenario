@@ -95,6 +95,7 @@ def data_for_x(driver, x_center, num_samples, save_dir):
             fname = f'./{save_dir}/images/image_{statestr}.pt'
             sct_img = sct.grab(sct.monitors[1])
             pil_img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+            pil_img.show()
             img = to_tensor(pil_img)
             img = transform(img)
             torch.save(img, fname)
