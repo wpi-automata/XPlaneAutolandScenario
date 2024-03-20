@@ -3,6 +3,9 @@ import csv
 from datetime import date
 from pathlib import Path
 import torch 
+import torchvision.transforms as T
+from PIL import Image
+import numpy as np
 
 from src.xplane_autoland.xplane_connect.vision_driver import XPlaneVisionDriver
 from src.xplane_autoland.vision.perception import AutolandPerceptionModel
@@ -25,7 +28,7 @@ def generate_data(plane, dataloader, save_dir):
     #Iterate over the dataset
     #processed states values for reference: phi,theta,psi,x,y,h,imagename
     print(f"Iterating over the data")
-    with open(f"{repo_dir}/data/processed-states.csv") as states_file: 
+    with open(f"{repo_dir}/dataWPI_12464/states.csv") as states_file: 
         csv_reader = csv.reader(states_file, delimiter=',')
         for row, (rwy_img, orient_alt, _ ) in zip(csv_reader, dataloader):
     
@@ -67,7 +70,7 @@ if __name__ == '__main__':
         data_dir=str(repo_dir/"dataWPI_12464")
     dataset = AutolandImageDataset(f"{data_dir}/states.csv", f"{data_dir}/images")
 
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False, num_workers=4)
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False, num_workers=1)
 
     #2: Generate Data
     generate_data(plane, dataloader, save_dir)
