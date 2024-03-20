@@ -55,7 +55,7 @@ if __name__ == '__main__':
     repo_dir = this_dir.resolve()
 
     today = date.today()
-    save_dir = Path(f"{repo_dir}/errors/{today.year}-{today.month}-{today.day}")
+    save_dir = Path(f"{repo_dir}/errors/{today.year}-{today.month}-{today.day}/WPI12464-12-6")
     if not save_dir.exists():
         save_dir.mkdir()
 
