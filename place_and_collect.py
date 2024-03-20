@@ -95,7 +95,7 @@ def data_for_x(driver, x_center, num_samples, save_dir):
             fname = f'./{save_dir}/images/image_{statestr}.pt'
             sct_img = sct.grab(sct.monitors[1])
             pil_img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
-            pil_img.show()
+            #pil_img.show()
             img = to_tensor(pil_img)
             img = transform(img)
             torch.save(img, fname)
@@ -121,7 +121,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Sample training data for a vision-based state estimator")
     parser.add_argument("x_center", type=float, help="Which x value to collect data around")
     parser.add_argument("--seed", type=int, help="Set the random seed", default=1)
-    parser.add_argument("--num-samples", type=float, help="How many samples to collect for this value of x", default=600)
+    parser.add_argument("--num-samples", type=float, help="How many samples to collect for this value of x", default=400)
     args = parser.parse_args()
 
     random.seed(args.seed)
@@ -133,7 +133,7 @@ if __name__ == '__main__':
     time.sleep(4)
     print('Starting...')
 
-    save_dir = Path("./dataWPI_12464")
+    save_dir = Path("./dataWPI_17000") #Need to make sure we change this 
     if not save_dir.exists():
         save_dir.mkdir()
     images_dir = save_dir / "images"

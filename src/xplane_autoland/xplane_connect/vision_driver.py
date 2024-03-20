@@ -15,7 +15,7 @@ class XPlaneVisionDriver(XPlaneDriver):
     """
     def __init__(self, state_estimator, home_heading=53.7,
                  local_start=(-35285.421875, 40957.0234375),
-                 start_ground_range=12464, start_elev = 1029.45,
+                 start_ground_range=12464, start_elev = 1267.17,
                  t=(-25159.26953, 33689.8125)):
         super().__init__(home_heading, local_start, start_ground_range,
                          start_elev, t)
