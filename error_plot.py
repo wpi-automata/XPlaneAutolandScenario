@@ -16,7 +16,7 @@ def combine_data(save_dir, repo_dir):
     writer = csv.writer(f)
 
     with open(f"{repo_dir}/data/processed-states.csv") as states_file: #This needs to change 
-        with open(f"{repo_dir}/errors/2024-3-3/generated_states.csv") as gen_states_file:
+        with open(f"{repo_dir}/errors/2024-3-20/WPI12464-3-13/generated_states.csv") as gen_states_file:
             csv_reader1 = csv.reader(states_file, delimiter=',')
             csv_reader2 = csv.reader(gen_states_file, delimiter=',')
             line_count = 0
@@ -181,7 +181,7 @@ if __name__ == '__main__':
     repo_dir = this_dir.resolve()
 
     today = date.today()
-    save_dir = Path(f"{repo_dir}/plots/{today.year}-{today.month}-{today.day}")
+    save_dir = Path(f"{repo_dir}/plots/WPI12464-3-13/{today.year}-{today.month}-{today.day}")
     if not save_dir.exists():
         save_dir.mkdir()
     

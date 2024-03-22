@@ -28,7 +28,7 @@ def generate_data(plane, dataloader, save_dir):
     #Iterate over the dataset
     #processed states values for reference: phi,theta,psi,x,y,h,imagename
     print(f"Iterating over the data")
-    with open(f"{repo_dir}/dataWPI_12464/states.csv") as states_file: 
+    with open(f"{repo_dir}/data/processed-states.csv") as states_file: 
         csv_reader = csv.reader(states_file, delimiter=',')
         for row, (rwy_img, orient_alt, _ ) in zip(csv_reader, dataloader):
     
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     repo_dir = this_dir.resolve()
 
     today = date.today()
-    save_dir = Path(f"{repo_dir}/errors/{today.year}-{today.month}-{today.day}/WPI12464-12-6")
+    save_dir = Path(f"{repo_dir}/errors/{today.year}-{today.month}-{today.day}/LL12464-12-6")
     if not save_dir.exists():
         save_dir.mkdir()
 
@@ -67,8 +67,8 @@ if __name__ == '__main__':
     #1: Collect the Dataset 
     data_dir = args.data_dir
     if data_dir is None:
-        data_dir=str(repo_dir/"dataWPI_12464")
-    dataset = AutolandImageDataset(f"{data_dir}/states.csv", f"{data_dir}/images")
+        data_dir=str(repo_dir/"data")
+    dataset = AutolandImageDataset(f"{data_dir}/processed-states.csv", f"{data_dir}/images")
 
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False, num_workers=1)
 
