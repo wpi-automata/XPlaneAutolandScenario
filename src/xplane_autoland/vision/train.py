@@ -20,8 +20,8 @@ from torch.optim import lr_scheduler
 import torch.backends.cudnn as cudnn
 from torch.utils.tensorboard import SummaryWriter
 
-from xplane_autoland.vision.perception import AutolandPerceptionModel
-from xplane_autoland.vision.xplane_data import AutolandImageDataset
+from src.xplane_autoland.vision.perception import AutolandPerceptionModel
+from src.xplane_autoland.vision.xplane_data import AutolandImageDataset
 
 cudnn.benchmark = True
 plt.ion()   # interactive mode
@@ -202,9 +202,9 @@ if __name__ == '__main__':
     # Collect the dataset
     data_dir = args.data_dir
     if data_dir is None:
-        data_dir=str(repo_dir/"dataWPI_12464")
+        data_dir=str(repo_dir/"dataWPI_50-10")
     logger.info(f"Using data from: {data_dir}")
-    full_dataset = AutolandImageDataset(f"{data_dir}/processed-states.csv", f"{data_dir}/images")
+    full_dataset = AutolandImageDataset(f"{data_dir}/states.csv", f"{data_dir}/images")
     train_size = int(0.8 * len(full_dataset))
     val_size = len(full_dataset) - train_size
     logger.info(f"Dataset Train size: {train_size}, Val size: {val_size}")

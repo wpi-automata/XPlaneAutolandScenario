@@ -19,13 +19,13 @@ from src.xplane_autoland.vision.perception import AutolandPerceptionModel
 
 # for sigmas, chosen so that rarely ever goes beyond given value
 # dividing by 3 so that 3sigma is a bit of a bound
-max_degrees   = 15.
+max_degrees   = 10.
 dphi_sigma    = max_degrees/3
 dtheta_sigma  = max_degrees/3
 dpsi_sigma    = max_degrees/3
-dx_bounds     = [-150, 150]
-dy_bounds     = [-150, 150]
-dh_bounds     = [-150, 150]
+dx_bounds     = [-50, 50]
+dy_bounds     = [-50, 50]
+dh_bounds     = [-50, 50]
 
 
 model = AutolandPerceptionModel()
@@ -121,7 +121,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Sample training data for a vision-based state estimator")
     parser.add_argument("x_center", type=float, help="Which x value to collect data around")
     parser.add_argument("--seed", type=int, help="Set the random seed", default=1)
-    parser.add_argument("--num-samples", type=float, help="How many samples to collect for this value of x", default=400)
+    parser.add_argument("--num-samples", type=float, help="How many samples to collect for this value of x", default=600)
     args = parser.parse_args()
 
     random.seed(args.seed)
@@ -133,7 +133,7 @@ if __name__ == '__main__':
     time.sleep(4)
     print('Starting...')
 
-    save_dir = Path("./dataWPI_17000") #Need to make sure we change this 
+    save_dir = Path("./dataWPI_50-10") #Need to make sure we change this 
     if not save_dir.exists():
         save_dir.mkdir()
     images_dir = save_dir / "images"
