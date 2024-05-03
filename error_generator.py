@@ -28,7 +28,7 @@ def generate_data(plane, dataloader, save_dir):
     #Iterate over the dataset
     #processed states values for reference: phi,theta,psi,x,y,h,imagename
     print(f"Iterating over the data")
-    with open(f"{repo_dir}/dataWPI_50-10/states.csv") as states_file: 
+    with open(f"{repo_dir}/dataWPI_450-15/states.csv") as states_file: 
         csv_reader = csv.reader(states_file, delimiter=',')
         for row, (rwy_img, orient_alt, _ ) in zip(csv_reader, dataloader):
     
@@ -55,19 +55,19 @@ if __name__ == '__main__':
     repo_dir = this_dir.resolve()
 
     today = date.today()
-    save_dir = Path(f"{repo_dir}/errors/{today.year}-{today.month}-{today.day}")
+    save_dir = Path(f"{repo_dir}/errors/{today.year}-{today.month}-{today.day}/450")
     if not save_dir.exists():
         save_dir.mkdir()
 
     model = AutolandPerceptionModel(resnet_version="50")
-    model.load("/home/colette/XPlaneAutolandScenario/models/2024-3-13/best_model_params.pt")
+    model.load("/home/colette/XPlaneAutolandScenario/models/2024-4-1/best_model_params.pt")
     model.eval()
     plane = XPlaneVisionDriver(model)
     
     #1: Collect the Dataset 
     data_dir = args.data_dir
     if data_dir is None:
-        data_dir=str(repo_dir/"dataWPI_50-10")
+        data_dir=str(repo_dir/"dataWPI_450-15")
     dataset = AutolandImageDataset(f"{data_dir}/states.csv", f"{data_dir}/images")
 
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False, num_workers=1)
