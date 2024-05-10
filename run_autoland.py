@@ -17,6 +17,7 @@ if __name__ == '__main__':
     parser.add_argument("--model", help="The path to model parameters (*.pt) for a vision network. Note must have XPlane fullscreen for screenshots", default=None)
     args = parser.parse_args()
 
+    ##Save state information to a file##
     this_dir = Path(__file__).parent
     repo_dir = this_dir.resolve()
 
@@ -25,7 +26,7 @@ if __name__ == '__main__':
     if not save_dir.exists():
         save_dir.mkdir()
 
-    statepath = Path(f"{save_dir}/Trial15-12464_states.csv")
+    statepath = Path(f"{save_dir}/Trial15-12464_states.csv") #12464 corresponds to start distance from the runway
     if not statepath.is_file():
         with open(str(statepath), 'w') as f:
             writer = csv.writer(f)
@@ -33,6 +34,7 @@ if __name__ == '__main__':
 
     f = open(str(statepath), 'a')
     writer = csv.writer(f)
+    ####################################
 
     WITH_VISION = False
     if args.model:
