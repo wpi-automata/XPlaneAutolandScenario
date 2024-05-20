@@ -26,7 +26,7 @@ class XPlaneVisionDriver(XPlaneDriver):
         # Need to stop and take image
         self._sct = mss.mss()
 
-    def est_pos_state(self, img, orient_alt):
+    def est_pos_state(self, img, orient_alt): #Refactor to take in image and orientation data for error data generation
         """
         Estimates the position state using a vision network
 
@@ -34,6 +34,8 @@ class XPlaneVisionDriver(XPlaneDriver):
             y -- lateral deviation
             err_h -- error in height relative to a glideslope
         """
+        #Take out pre-processing and image generation (already done)
+
         # sct_img = self._sct.grab(self._sct.monitors[1])
         # pil_img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
         # img = to_tensor(pil_img)
@@ -52,8 +54,9 @@ class XPlaneVisionDriver(XPlaneDriver):
             y_err, h_err = self._state_estimator(img, orient_alt).flatten()
             y_err *= label_mult
             h_err *= label_mult
-            print("Got here")
-            print("Y: %f", y_err)
+            #Debug statements 
+            # print("Got here") 
+            # print("Y: %f", y_err)
 
         return y_err.item(), h_err.item()
 
