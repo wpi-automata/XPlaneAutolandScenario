@@ -19,6 +19,8 @@ from src.xplane_autoland.vision.perception import AutolandPerceptionModel
 
 # for sigmas, chosen so that rarely ever goes beyond given value
 # dividing by 3 so that 3sigma is a bit of a bound
+
+#These are the values I changed to get the OOD information
 max_degrees   = 15.
 dphi_sigma    = max_degrees/3
 dtheta_sigma  = max_degrees/3
@@ -110,18 +112,18 @@ def data_for_x(driver, x_center, num_samples, save_dir):
     print(f'Last Image Name: {fname}')
 
 
-def sweep_x(driver, num_samples, save_dir):
+def sweep_x(driver, num_samples, distance, save_dir):
     # parameter sweeps
-    x_sweep      = np.arange(0., driver._start_ground_range, 100.)
+    x_sweep      = np.arange(0., distance, 100.)
     for x_center in x_sweep:
         data_for_x(driver, x_center, num_samples, save_dir)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Sample training data for a vision-based state estimator")
-    parser.add_argument("x_center", type=float, help="Which x value to collect data around")
+    parser.add_argument("--x_center", type=float, help="Which x value to collect data around", default=12464)
     parser.add_argument("--seed", type=int, help="Set the random seed", default=1)
-    parser.add_argument("--num-samples", type=float, help="How many samples to collect for this value of x", default=300)
+    parser.add_argument("--num-samples", type=float, help="How many samples to collect for this value of x", default=600)
     args = parser.parse_args()
 
     random.seed(args.seed)
@@ -142,5 +144,5 @@ if __name__ == '__main__':
     with open(f"./{save_dir}/config.txt", "w") as f:
         f.write(f"Save Directory: {save_dir}\n")
         f.write(f"Seed: {args.seed}\n")
-    sweep_x(driver, args.num_samples, save_dir=save_dir)
+    sweep_x(driver, args.num_samples, args.x_center,  save_dir=save_dir)
     #data_for_x(driver, args.x_center, args.num_samples, save_dir=save_dir)
