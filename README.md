@@ -41,8 +41,10 @@ Note: Most up-to-date data generation script is in colette-dev_error-plot branch
 
 Due to changes in the vision_driver.py script in order to run previously generated datasets through the NN, auto_lander.py and train.py are always run in the colette_dev branch only.
 
+Only in colette-dev_error-plot branch: 
 error_generator.py runs a dataset through the NN and records the output of the NN to a csv file called generated_states.csv. 
 error_plot.py takes the true state information of the airplane for a particular image using the states.csv file in the dataset and uses it and generated_states.csv to calculate the error in output of the NN. Contrary to it's name, it doesn't actually plot anything.... Make sure the datasets are also cut over to the repo prior to running. 
+image_check.py was a test program created to sanity check the tensor images. 
 
 
 
