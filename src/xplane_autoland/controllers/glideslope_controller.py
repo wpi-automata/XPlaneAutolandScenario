@@ -1,8 +1,5 @@
 import sys
 sys.path.append('/home/agchadbo/XPlaneAutolandScenario/src/xplane_autoland')
-import os
-cwd = os.getcwd()
-print(cwd)
 from xplane_autoland.utils.pid import PID
 import math
 
