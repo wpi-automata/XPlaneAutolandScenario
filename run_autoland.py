@@ -15,6 +15,7 @@ from src.xplane_autoland.vision.perception import AutolandPerceptionModel
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run the autoland scenario at KMWH Grant County International Airport Runway 04. You must start XPlane and choose the airport + a Cessna separately.")
     parser.add_argument("--model", help="The path to model parameters (*.pt) for a vision network. Note must have XPlane fullscreen for screenshots", default=None)
+    parser.add_argument("--monitor", help="The monitor where XPlane is running and screenshots for the vision network are to be taken. Should be only 0 or 1 for WPI system. 1 is left monitor, 0 is right.", default=1)
     args = parser.parse_args()
 
     ##Save state information to a file##
@@ -76,7 +77,7 @@ if __name__ == '__main__':
 
             if WITH_VISION:
                 plane.pause(True)
-                y_pred, h_err_pred = plane.est_pos_state()
+                y_pred, h_err_pred = plane.est_pos_state(args.monitor) 
                 # update state vector with y estimate
                 # err_h will be used directly
                 state[-2] = y_pred
@@ -86,7 +87,7 @@ if __name__ == '__main__':
                 y_err_NN = y - y_pred
                 h_err_NN = h_err - h_err_pred
 
-                writer.writerow([phi, theta, psi, x, y, y_pred, h, h_err, h_err_pred, y_err_NN, h_err_NN])
+                writer.writerow([phi, theta, psi, x, y, y_pred, h, h_err, h_err_pred, y_err_NN, h_err_NN]) #Write to the file at each iteration 
                 # print("Y: %f", y_1)
 
             elevator, aileron, rudder, throttle = gsc.control(state, err_h=h_err_pred)

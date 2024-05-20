@@ -30,3 +30,10 @@ From the plugins drop down menu, you can select XCamera and use the control pane
 
 Launch X-Plane 11 and start a flight with a Cessna Skyhawk at Grant Co Airport (KMWH).
 Run `run_autoland.py` from within the Python virtual environment. This will land the plane using perfect state information.
+
+### Additional Information (WPI) 
+
+To run the autolander with the NN, set the --model arg to the path leading to the desired vision model. 
+Set the --monitor arg to the correct monitor in which to take screenshots (the one in which XPlane is running). Can be either 0 or 1 on the WPI system, default is 1. 0 is the RIGHT monitor and 1 is the LEFT monitor (If I remember correctly). Also refer to sticky notes left on my desk. Will also need to be done with place_and_collect.py as well. 
+Note: Most up-to-date data generation script is in colette-dev_error-plot branch. 
+
