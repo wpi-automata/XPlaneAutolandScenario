@@ -6,7 +6,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision.io import read_image
 import warnings
 import sys
-sys.path.append('/home/colette/XPlaneAutolandScenario/src/xplane_autoland')
+sys.path.append('/home/agchadbo/XPlaneAutolandScenario/src/xplane_autoland')
 from controllers.glideslope_controller import GlideSlopeController
 
 class AutolandImageDataset(Dataset):

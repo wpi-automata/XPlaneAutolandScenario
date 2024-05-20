@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/home/colette/XPlaneAutolandScenario/src/xplane_autoland')
+sys.path.append('/home/agchadbo/XPlaneAutolandScenario/src/xplane_autoland')
 from xplane_connect.driver import XPlaneDriver
 
 from vision.perception import AutolandPerceptionModel
@@ -59,6 +59,6 @@ class XPlaneVisionDriver(XPlaneDriver):
 
 if __name__ == "__main__":
     model = AutolandPerceptionModel(resnet_version="50")
-    model.load("/home/colette/XPlaneAutolandScenario/models/2024-3-3/best_model_params.pt")
+    model.load("/home/agchadbo/XPlaneAutolandScenario/models/2024-3-3/best_model_params.pt")
     model.eval()
     vision_driver = XPlaneVisionDriver(model)
