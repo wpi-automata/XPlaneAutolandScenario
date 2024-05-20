@@ -26,15 +26,15 @@ def generate_data(plane, dataloader, save_dir):
     writer = csv.writer(f)
 
     #Iterate over the dataset
-    #processed states values for reference: phi,theta,psi,x,y,h,imagename
+    #processed states values for reference: phi,theta,psi,x,y,h,imagename- you'll need to enter the states.csv file and make sure the strings are deleted 
     print(f"Iterating over the data")
-    with open(f"{repo_dir}/dataWPI_450-15/states.csv") as states_file: 
+    with open(f"{repo_dir}/dataWPI_450-15/states.csv") as states_file: #Another line to make sure consistent 
         csv_reader = csv.reader(states_file, delimiter=',')
         for row, (rwy_img, orient_alt, _ ) in zip(csv_reader, dataloader):
     
             #iterate over the data and pass it into est_state
             y_err, h_err = plane.est_pos_state(rwy_img, orient_alt)
-            h_err_true = gsc.get_glideslope_height_at(float(row[3])) - float(row[5])
+            h_err_true = gsc.get_glideslope_height_at(float(row[3])) - float(row[5]) #get the true height error for reference 
 
             #return the est_state values in the x and y and save them to a csv file 
             writer.writerow([y_err, h_err, h_err_true])
@@ -55,19 +55,19 @@ if __name__ == '__main__':
     repo_dir = this_dir.resolve()
 
     today = date.today()
-    save_dir = Path(f"{repo_dir}/errors/{today.year}-{today.month}-{today.day}/450")
+    save_dir = Path(f"{repo_dir}/errors/{today.year}-{today.month}-{today.day}/450") #Can also rewrite to use arg parsing 
     if not save_dir.exists():
         save_dir.mkdir()
 
     model = AutolandPerceptionModel(resnet_version="50")
-    model.load("/home/colette/XPlaneAutolandScenario/models/2024-4-1/best_model_params.pt")
+    model.load("/home/colette/XPlaneAutolandScenario/models/2024-4-1/best_model_params.pt") #Load in model manually (can also re-write to use the --model param if preferred)
     model.eval()
     plane = XPlaneVisionDriver(model)
     
     #1: Collect the Dataset 
     data_dir = args.data_dir
     if data_dir is None:
-        data_dir=str(repo_dir/"dataWPI_450-15")
+        data_dir=str(repo_dir/"dataWPI_450-15") #Make sure this is the right one 
     dataset = AutolandImageDataset(f"{data_dir}/states.csv", f"{data_dir}/images")
 
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False, num_workers=1)
