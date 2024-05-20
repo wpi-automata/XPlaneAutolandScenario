@@ -36,4 +36,11 @@ Run `run_autoland.py` from within the Python virtual environment. This will land
 To run the autolander with the NN, set the --model arg to the path leading to the desired vision model. 
 Set the --monitor arg to the correct monitor in which to take screenshots (the one in which XPlane is running). Can be either 0 or 1 on the WPI system, default is 1. 0 is the RIGHT monitor and 1 is the LEFT monitor (If I remember correctly). Also refer to sticky notes left on my desk. Will also need to be done with place_and_collect.py as well. 
 Note: Most up-to-date data generation script is in colette-dev_error-plot branch. 
+Due to changes in the vision_driver.py script in order to run previously generated datasets through the NN, auto_lander.py and train.py are always run in the colette_dev branch only.
+
+Only in colette-dev_error-plot branch:
+
+error_generator.py runs a dataset through the NN and records the output of the NN to a csv file called generated_states.csv.
+error_plot.py takes the true state information of the airplane for a particular image using the states.csv file in the dataset and uses it and generated_states.csv to calculate the error in output of the NN. Contrary to it's name, it doesn't actually plot anything.... Make sure the datasets are also cut over to the repo prior to running.
+image_check.py was a test program created to sanity check the tensor images.
 
