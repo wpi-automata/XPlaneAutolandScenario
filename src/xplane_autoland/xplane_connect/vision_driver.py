@@ -1,8 +1,8 @@
 import sys
 sys.path.append('/home/agchadbo/XPlaneAutolandScenario/src/xplane_autoland')
-from xplane_connect.driver import XPlaneDriver
+from xplane_autoland.xplane_connect.driver import XPlaneDriver
 
-from vision.perception import AutolandPerceptionModel
+from xplane_autoland.vision.perception import AutolandPerceptionModel
 import mss
 from PIL import Image
 import torch
