@@ -72,7 +72,8 @@ if __name__ == '__main__':
         for step in range(math.ceil(max_time/dt)):
             state = plane.get_statevec()
             phi, theta, psi, x, y, h = state[-6:]
-            print(x)
+            #Debug 
+            #print(x)
             h_err_pred = None
 
             if WITH_VISION:

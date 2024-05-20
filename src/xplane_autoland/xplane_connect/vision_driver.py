@@ -50,9 +50,10 @@ class XPlaneVisionDriver(XPlaneDriver):
             y_err, h_err = self._state_estimator(img, orient_alt).flatten()
             y_err *= label_mult
             h_err *= label_mult
-            print("Got here")
-            print("Y: %f", y_err)
-            print("H: %f", h_err)
+            #Debug statements 
+            # print("Got here")
+            # print("Y: %f", y_err)
+            # print("H: %f", h_err)
 
         return y_err.item(), h_err.item()
 
