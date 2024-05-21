@@ -28,7 +28,7 @@ def generate_data(plane, dataloader, save_dir):
     #Iterate over the dataset
     #processed states values for reference: phi,theta,psi,x,y,h,imagename- you'll need to enter the states.csv file and make sure the strings are deleted 
     print(f"Iterating over the data")
-    with open(f"{repo_dir}/dataWPI_450-15/states.csv") as states_file: #Another line to make sure consistent 
+    with open(f"/media/storage_drive/ULI Datasets/OOD Data/dataWPI_50-10/states.csv") as states_file: #Another line to make sure consistent 
         csv_reader = csv.reader(states_file, delimiter=',')
         for row, (rwy_img, orient_alt, _ ) in zip(csv_reader, dataloader):
     
@@ -55,19 +55,27 @@ if __name__ == '__main__':
     repo_dir = this_dir.resolve()
 
     today = date.today()
-    save_dir = Path(f"{repo_dir}/errors/{today.year}-{today.month}-{today.day}/450") #Can also rewrite to use arg parsing 
+    save_dir = None
+    if args.save_dir:
+        save_dir = Path(f"{args.save_dir}")
+    else:
+        save_dir = Path(f"{repo_dir}/errors/{today.year}-{today.month}-{today.day}/450") #Can also rewrite to use arg parsing
+     
     if not save_dir.exists():
         save_dir.mkdir()
 
-    model = AutolandPerceptionModel(resnet_version="50")
-    model.load("/home/colette/XPlaneAutolandScenario/models/2024-4-1/best_model_params.pt") #Load in model manually (can also re-write to use the --model param if preferred)
+    model = AutolandPerceptionModel(resnet_version=args.resnet_version)
+    if args.model:
+        model.load(args.model)
+    else:
+        model.load("models/2024-4-1/best_model_params.pt") #Load in model manually (can also re-write to use the --model param if preferred)
     model.eval()
     plane = XPlaneVisionDriver(model)
     
     #1: Collect the Dataset 
     data_dir = args.data_dir
-    if data_dir is None:
-        data_dir=str(repo_dir/"dataWPI_450-15") #Make sure this is the right one 
+    if not args.data_dir:
+        data_dir="/media/storage_drive/ULI Datasets/OOD Data/dataWPI_50-10" #Make sure this is the right one 
     dataset = AutolandImageDataset(f"{data_dir}/states.csv", f"{data_dir}/images")
 
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False, num_workers=1)
