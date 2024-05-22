@@ -9,14 +9,20 @@ from src.xplane_autoland.xplane_connect.vision_driver import XPlaneVisionDriver
 from src.xplane_autoland.xplane_connect.driver import XPlaneDriver
 from src.xplane_autoland.vision.perception import AutolandPerceptionModel
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Run the autoland scenario at KMWH Grant County International Airport Runway 04. You must start XPlane and choose the airport + a Cessna separately.")
-    parser.add_argument("--model", help="The path to model parameters (*.pt) for a vision network. Note must have XPlane fullscreen for screenshots", default=None)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Run the autoland scenario at KMWH Grant County International Airport Runway 04. You must start XPlane and choose the airport + a Cessna separately."
+    )
+    parser.add_argument(
+        "--model",
+        help="The path to model parameters (*.pt) for a vision network. Note must have XPlane fullscreen for screenshots",
+        default=None,
+    )
     args = parser.parse_args()
 
     WITH_VISION = False
     if args.model:
-        WITH_VISION=True
+        WITH_VISION = True
         model = AutolandPerceptionModel(resnet_version="50")
         model.load(args.model)
         model.eval()
@@ -46,7 +52,7 @@ if __name__ == '__main__':
 
     try:
         last_time = time.time()
-        for step in range(math.ceil(max_time/dt)):
+        for step in range(math.ceil(max_time / dt)):
             state = plane.get_statevec()
             phi, theta, psi, x, y, h = state[-6:]
             err_h = None
@@ -67,7 +73,7 @@ if __name__ == '__main__':
                 print("Successfully landed")
                 plane.pause(False)
                 # run the simulation for 10 more seconds to complete landing
-                for step in range(math.ceil(10/dt)):
+                for step in range(math.ceil(10 / dt)):
                     state = plane.get_statevec()
                     # use the controller to keep it straight
                     elevator, aileron, rudder, _ = gsc.control(state)
@@ -80,10 +86,10 @@ if __name__ == '__main__':
             plane.pause(False)
             time.sleep(dt)
 
-        print('Done')
+        print("Done")
         plane.pause(True)
         h = input("Press any key to end.")
     except KeyboardInterrupt:
-        print('Interrupted -- Pausing sim and exiting')
+        print("Interrupted -- Pausing sim and exiting")
         plane.pause(True)
         sys.exit(130)

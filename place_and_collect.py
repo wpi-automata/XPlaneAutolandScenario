@@ -6,7 +6,8 @@ import numpy as np
 from pathlib import Path
 import random
 import time
-#from tqdm import tqdm
+
+# from tqdm import tqdm
 
 from PIL import Image
 import torch
@@ -20,14 +21,14 @@ from src.xplane_autoland.vision.perception import AutolandPerceptionModel
 # for sigmas, chosen so that rarely ever goes beyond given value
 # dividing by 3 so that 3sigma is a bit of a bound
 
-#These are the values I changed to get the OOD information
-max_degrees   = 15.
-dphi_sigma    = max_degrees/3
-dtheta_sigma  = max_degrees/3
-dpsi_sigma    = max_degrees/3
-dx_bounds     = [-450, 450]
-dy_bounds     = [-450, 450]
-dh_bounds     = [-450, 450]
+# These are the values I changed to get the OOD information
+max_degrees = 15.0
+dphi_sigma = max_degrees / 3
+dtheta_sigma = max_degrees / 3
+dpsi_sigma = max_degrees / 3
+dx_bounds = [-450, 450]
+dy_bounds = [-450, 450]
+dh_bounds = [-450, 450]
 
 
 model = AutolandPerceptionModel()
@@ -37,7 +38,7 @@ to_tensor = transforms.PILToTensor()
 
 def data_for_x(driver, x_center, num_samples, save_dir):
     print(f"Saving data for x={x_center}")
-    gsc    = GlideSlopeController(gamma=3)
+    gsc = GlideSlopeController(gamma=3)
 
     h_thresh = gsc._h_thresh
     start_elev = driver._start_elev
@@ -45,11 +46,11 @@ def data_for_x(driver, x_center, num_samples, save_dir):
 
     statepath = Path(f"./{save_dir}/states.csv")
     if not statepath.is_file():
-        with open(str(statepath), 'w') as f:
+        with open(str(statepath), "w") as f:
             writer = csv.writer(f)
-            writer.writerow(['phi', 'theta', 'psi', 'x', 'y', 'h', 'imagename'])
+            writer.writerow(["phi", "theta", "psi", "x", "y", "h", "imagename"])
 
-    f = open(str(statepath), 'a')
+    f = open(str(statepath), "a")
     writer = csv.writer(f)
     entries = set()
     sct = mss.mss()
@@ -60,13 +61,13 @@ def data_for_x(driver, x_center, num_samples, save_dir):
         print(f"Base h = {h_center}")
         n = 0
         while n < num_samples:
-            dphi = random.normalvariate(0., dphi_sigma)
-            dtheta = random.normalvariate(0., dtheta_sigma)
-            dpsi = random.normalvariate(0., dpsi_sigma)
+            dphi = random.normalvariate(0.0, dphi_sigma)
+            dtheta = random.normalvariate(0.0, dtheta_sigma)
+            dpsi = random.normalvariate(0.0, dpsi_sigma)
             dx = float(random.randint(*dx_bounds))
             dy = float(random.randint(*dy_bounds))
             dh = float(random.randint(*dh_bounds))
-            if h_center+dh < gsc._runway_elev:
+            if h_center + dh < gsc._runway_elev:
                 continue
 
             if n % 100 == 0:
@@ -75,7 +76,7 @@ def data_for_x(driver, x_center, num_samples, save_dir):
             # set time to 8am
             driver._client.sendDREF("sim/time/zulu_time_sec", 8 * 3600 + 8 * 3600)
 
-            orient_pos = (dphi, dtheta, dpsi, x_center+dx, dy, h_center+dh)
+            orient_pos = (dphi, dtheta, dpsi, x_center + dx, dy, h_center + dh)
             if orient_pos in entries:
                 continue
             entries.add(orient_pos)
@@ -85,19 +86,21 @@ def data_for_x(driver, x_center, num_samples, save_dir):
             actual_orient_pos = state[-6:]
             abs_diff = np.abs(orient_pos - actual_orient_pos)
             rel = np.abs(orient_pos)
-            rel[rel < 1] = 1.
+            rel[rel < 1] = 1.0
             per_diff = abs_diff / rel
             if not np.all(per_diff < 0.05):
-                print(f'Warning: more than 5% difference between requested and actual state')
-                print(f'% Diff: {per_diff}')
-                print(f'Requested: {orient_pos}')
-                print(f'Actual: {actual_orient_pos}')
-            nv_pairs = zip(['phi', 'theta', 'psi', 'x', 'y', 'h'], actual_orient_pos)
-            statestr = '_'.join([p0 + str(int(p1)) for p0, p1 in nv_pairs])
-            fname = f'./{save_dir}/images/image_{statestr}.pt'
+                print(
+                    f"Warning: more than 5% difference between requested and actual state"
+                )
+                print(f"% Diff: {per_diff}")
+                print(f"Requested: {orient_pos}")
+                print(f"Actual: {actual_orient_pos}")
+            nv_pairs = zip(["phi", "theta", "psi", "x", "y", "h"], actual_orient_pos)
+            statestr = "_".join([p0 + str(int(p1)) for p0, p1 in nv_pairs])
+            fname = f"./{save_dir}/images/image_{statestr}.pt"
             sct_img = sct.grab(sct.monitors[1])
             pil_img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
-            #pil_img.show()
+            # pil_img.show()
             img = to_tensor(pil_img)
             img = transform(img)
             torch.save(img, fname)
@@ -106,24 +109,36 @@ def data_for_x(driver, x_center, num_samples, save_dir):
             n += 1
             time.sleep(0.15)
     except KeyboardInterrupt:
-        print('Interrupted.', flush=True)
+        print("Interrupted.", flush=True)
 
     f.close()
-    print(f'Last Image Name: {fname}')
+    print(f"Last Image Name: {fname}")
 
 
 def sweep_x(driver, num_samples, distance, save_dir):
     # parameter sweeps
-    x_sweep      = np.arange(0., distance, 100.)
+    x_sweep = np.arange(0.0, distance, 100.0)
     for x_center in x_sweep:
         data_for_x(driver, x_center, num_samples, save_dir)
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Sample training data for a vision-based state estimator")
-    parser.add_argument("--x_center", type=float, help="Which x value to collect data around", default=12464)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Sample training data for a vision-based state estimator"
+    )
+    parser.add_argument(
+        "--x_center",
+        type=float,
+        help="Which x value to collect data around",
+        default=12464,
+    )
     parser.add_argument("--seed", type=int, help="Set the random seed", default=1)
-    parser.add_argument("--num-samples", type=float, help="How many samples to collect for this value of x", default=600)
+    parser.add_argument(
+        "--num-samples",
+        type=float,
+        help="How many samples to collect for this value of x",
+        default=600,
+    )
     args = parser.parse_args()
 
     random.seed(args.seed)
@@ -133,9 +148,9 @@ if __name__ == '__main__':
     driver.pause(True)
     driver.reset()
     time.sleep(4)
-    print('Starting...')
+    print("Starting...")
 
-    save_dir = Path("./dataWPI_450-15") #Need to make sure we change this 
+    save_dir = Path("./dataWPI_450-15")  # Need to make sure we change this
     if not save_dir.exists():
         save_dir.mkdir()
     images_dir = save_dir / "images"
@@ -144,5 +159,5 @@ if __name__ == '__main__':
     with open(f"./{save_dir}/config.txt", "w") as f:
         f.write(f"Save Directory: {save_dir}\n")
         f.write(f"Seed: {args.seed}\n")
-    sweep_x(driver, args.num_samples, args.x_center,  save_dir=save_dir)
-    #data_for_x(driver, args.x_center, args.num_samples, save_dir=save_dir)
+    sweep_x(driver, args.num_samples, args.x_center, save_dir=save_dir)
+    # data_for_x(driver, args.x_center, args.num_samples, save_dir=save_dir)

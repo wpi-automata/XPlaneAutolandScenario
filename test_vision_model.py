@@ -5,21 +5,37 @@ import matplotlib.pyplot as plt
 from xplane_autoland.vision.perception import AutolandPerceptionModel
 from xplane_autoland.vision.xplane_data import AutolandImageDataset
 
+
 def mse(label, prediction):
-    return torch.sum(torch.square(label - prediction))/label.numel()
+    return torch.sum(torch.square(label - prediction)) / label.numel()
+
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Evaluate a given network on randomly selected data")
-    parser.add_argument("--model", help="The parameters for the model",
-                        default="./models/2023-12-6/best_model_params.pt")
-    parser.add_argument("--resnet-version", help="Which resnet to use", choices=["18", "50"],
-                        default="50")
-    parser.add_argument("--data-dir", help="Where the data is stored. Expecting images directory and processed-states.csv",
-                        default="./data")
-    parser.add_argument("--seed", help="The random seed for shuffling data", type=int,
-                        default=1)
-    parser.add_argument("--num-samples", help="How many samples to check", type=int,
-                        default=10)
+    parser = argparse.ArgumentParser(
+        description="Evaluate a given network on randomly selected data"
+    )
+    parser.add_argument(
+        "--model",
+        help="The parameters for the model",
+        default="./models/2023-12-6/best_model_params.pt",
+    )
+    parser.add_argument(
+        "--resnet-version",
+        help="Which resnet to use",
+        choices=["18", "50"],
+        default="50",
+    )
+    parser.add_argument(
+        "--data-dir",
+        help="Where the data is stored. Expecting images directory and processed-states.csv",
+        default="./data",
+    )
+    parser.add_argument(
+        "--seed", help="The random seed for shuffling data", type=int, default=1
+    )
+    parser.add_argument(
+        "--num-samples", help="How many samples to check", type=int, default=10
+    )
 
     args = parser.parse_args()
 
@@ -27,13 +43,17 @@ if __name__ == "__main__":
     G = torch.Generator()
     G = G.manual_seed(args.seed)
 
-    print(f"Loading model from {args.model} with backbone architecture ResNet-{args.resnet_version}")
+    print(
+        f"Loading model from {args.model} with backbone architecture ResNet-{args.resnet_version}"
+    )
     model = AutolandPerceptionModel(resnet_version=args.resnet_version)
     model.load(args.model)
 
     print(f"Loading dataset from: {args.data_dir}")
     # Note: not passing transform=model.preprocess because we save already preprocessed images
-    dataset = AutolandImageDataset(f"{args.data_dir}/processed-states.csv", f"{args.data_dir}/images")
+    dataset = AutolandImageDataset(
+        f"{args.data_dir}/processed-states.csv", f"{args.data_dir}/images"
+    )
 
     sampler = torch.utils.data.RandomSampler(data_source=dataset, generator=G)
     testloader = torch.utils.data.DataLoader(dataset, batch_size=1, sampler=sampler)

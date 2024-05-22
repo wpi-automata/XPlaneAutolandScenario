@@ -16,8 +16,7 @@ if __name__ == "__main__":
 
     # local coordinate frame has y as up
     def get_local_xz(client):
-        return [xp.get_local_x(client),
-                xp.get_local_z(client)]
+        return [xp.get_local_x(client), xp.get_local_z(client)]
 
     start_pos_local = get_local_xz(client)
     start_pos_autoland = xp.get_autoland_statevec(client)[-3:-1]
@@ -25,7 +24,7 @@ if __name__ == "__main__":
     l0 = np.array(start_pos_local).reshape(2, 1)
     v0 = np.array(start_pos_autoland).reshape(2, 1)
 
-    send_local_xz(client, l0[0], l0[1]+1)
+    send_local_xz(client, l0[0], l0[1] + 1)
     xl, zl = get_local_xz(client)
     l1 = np.array([[xl], [zl]])
     state = xp.get_autoland_statevec(client)
@@ -34,10 +33,11 @@ if __name__ == "__main__":
     l = l1 - l0
     v = v1 - v0
 
-    theta = np.arccos(np.dot(l.flatten(), v.flatten())/(np.linalg.norm(l)*np.linalg.norm(v)))
-    print(f'Got theta = {theta}')
-    R = np.array([[np.cos(theta), -np.sin(theta)],
-                  [np.sin(theta),  np.cos(theta)]])
-    t = l0 - R@v0
+    theta = np.arccos(
+        np.dot(l.flatten(), v.flatten()) / (np.linalg.norm(l) * np.linalg.norm(v))
+    )
+    print(f"Got theta = {theta}")
+    R = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+    t = l0 - R @ v0
     t = t.reshape((2, 1))
-    print(f'Translation = {t}')
+    print(f"Translation = {t}")

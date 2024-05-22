@@ -2,6 +2,7 @@ import torch
 from torch import nn
 from torchvision.models import resnet18, ResNet18_Weights, resnet50, ResNet50_Weights
 
+
 class AutolandPerceptionModel(nn.Module):
     def __init__(self, resnet_version="50", freeze=True):
         super(AutolandPerceptionModel, self).__init__()
@@ -22,9 +23,11 @@ class AutolandPerceptionModel(nn.Module):
 
         # replace the last layer (same number of features but this resets the weights
         # and resets requires_grad to True)
-        self.resnet.fc = nn.Linear(self.resnet.fc.in_features, self.resnet.fc.out_features)
+        self.resnet.fc = nn.Linear(
+            self.resnet.fc.in_features, self.resnet.fc.out_features
+        )
         # going to concatenate the 4d orient_alt vector
-        self.fc1 = nn.Linear(self.resnet.fc.out_features+4, 512)
+        self.fc1 = nn.Linear(self.resnet.fc.out_features + 4, 512)
         self.fc_final = nn.Linear(self.fc1.out_features, 2)
 
     def forward(self, img, orient_alt):
