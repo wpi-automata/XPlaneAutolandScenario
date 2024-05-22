@@ -62,7 +62,7 @@ class AutolandImageDataset(Dataset):
             image = self.transform(image)
         if self.target_transform:
             label = self.target_transform(label)
-        print("I am here")
+        #print("I am here")
         return image, orient_alt, label
 
 

@@ -17,7 +17,7 @@ def combine_data(save_dir, states, gen_states):
     writer = csv.writer(f)
 
     #Iterate through csv's: 
-    with open(f"{states}") as states_file: #This needs to change- make sure all paths for dataset and generated_states are consistent 
+    with open(f"{states}") as states_file: #make sure all paths for dataset and generated_states are consistent 
         with open(f"{gen_states}") as gen_states_file:
             csv_reader1 = csv.reader(states_file, delimiter=',')
             csv_reader2 = csv.reader(gen_states_file, delimiter=',')
