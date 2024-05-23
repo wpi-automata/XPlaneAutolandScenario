@@ -39,6 +39,7 @@ if __name__ == '__main__':
     WITH_VISION = False
     if args.model:
         WITH_VISION=True
+        print(args.model)
         model = AutolandPerceptionModel(resnet_version="50")
         model.load(args.model)
         model.eval()
@@ -71,12 +72,13 @@ if __name__ == '__main__':
         for step in range(math.ceil(max_time/dt)):
             state = plane.get_statevec()
             phi, theta, psi, x, y, h = state[-6:]
-            print(x)
+            #Debug 
+            #print(x)
             h_err_pred = None
 
             if WITH_VISION:
                 plane.pause(True)
-                y_pred, h_err_pred = plane.est_pos_state()
+                y_pred, h_err_pred = plane.est_pos_state() 
                 # update state vector with y estimate
                 # err_h will be used directly
                 state[-2] = y_pred
@@ -86,7 +88,7 @@ if __name__ == '__main__':
                 y_err_NN = y - y_pred
                 h_err_NN = h_err - h_err_pred
 
-                writer.writerow([phi, theta, psi, x, y, y_pred, h, h_err, h_err_pred, y_err_NN, h_err_NN])
+                writer.writerow([phi, theta, psi, x, y, y_pred, h, h_err, h_err_pred, y_err_NN, h_err_NN]) #Write to the file at each iteration 
                 # print("Y: %f", y_1)
 
             elevator, aileron, rudder, throttle = gsc.control(state, err_h=h_err_pred)
