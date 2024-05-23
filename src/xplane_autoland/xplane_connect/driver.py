@@ -62,6 +62,9 @@ class XPlaneDriver:
         # Set parking brake
         self._client.sendDREF("sim/flightmodel/controls/parkbrake", int(noBrake))
 
+        # Set time of day
+        self._client.sendDREF("sim/time/zulu_time_sec", 20 * 3600) # Set time to noon: 12:00 (20:00 UTC)
+
         # Zero out moments and forces
         initRef = "sim/flightmodel/position/"
         drefs = []
