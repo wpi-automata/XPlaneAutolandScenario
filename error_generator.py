@@ -40,6 +40,7 @@ def generate_data(plane, dataloader, save_dir):
             writer.writerow([y_err, h_err, h_err_true])
         
     print(f"Done")
+    print(save_dir)
 
 
 if __name__ == '__main__':
@@ -49,6 +50,7 @@ if __name__ == '__main__':
     parser.add_argument("--data-dir", help="The directory with image data should contain a states.csv and images directory", default=None)
     parser.add_argument("--resnet-version", help="Choose which resnet to use", default="50", choices=["18", "50"])
     parser.add_argument("--model", help="The path to model parameters (*.pt) for a vision network. Note must have XPlane fullscreen for screenshots", default=None)
+    parser.add_argument("--offset", help="The number of meters in distance offset", default="450")
     args = parser.parse_args()
 
     this_dir = Path(__file__).parent
@@ -59,10 +61,10 @@ if __name__ == '__main__':
     if args.save_dir:
         save_dir = Path(f"{args.save_dir}")
     else:
-        save_dir = Path(f"{repo_dir}/errors/{today.year}-{today.month}-{today.day}/450") #Can also rewrite to use arg parsing
+        save_dir = Path(f"{repo_dir}/errors/{today.year}-{today.month}-{today.day}/{args.offset}")
      
     if not save_dir.exists():
-        save_dir.mkdir()
+        save_dir.mkdir(parents=True)
 
     model = AutolandPerceptionModel(resnet_version=args.resnet_version)
     if args.model:
