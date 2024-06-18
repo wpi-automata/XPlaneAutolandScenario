@@ -32,7 +32,7 @@ scod_model = scod.SCOD(model)
 
 data_dir = "/media/storage_drive/ULI Datasets/OOD Data/dataWPI_50-10"
 full_dataset = AutolandImageDataset(f"{data_dir}/states.csv", f"{data_dir}/images")
-train_size = int(0.8 * len(full_dataset))
+train_size = int(0.01 * len(full_dataset))
 val_size = len(full_dataset) - train_size
 train_dataset, val_dataset = torch.utils.data.random_split(full_dataset, [train_size, val_size])
 # might need to experiment with different values for "batch_size" and "lr"
@@ -40,11 +40,12 @@ train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=1, shuf
 rwy_img, orient_alt, labels  = next(iter(train_dataloader))
 # optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
 
-
+print(type(train_dataset.dataset.img_labels))
 scod_model.process_dataset(train_dataset, dist_layer)
 
-# ood_detector = scod.OodDetector(scod_model, dist_layer)
-# print(rwy_img.size())
-# print(orient_alt.size())
-# ood_signal = ood_detector(rwy_img, orient_alt)
+torch.save(scod_model, "/home/achadbo/XPlaneAutolandScenario/models/scod/2024-6-18")
+
+ood_detector = scod.OodDetector(scod_model, dist_layer)
+ood_signal = ood_detector(rwy_img, orient_alt)
+print(ood_signal)
 

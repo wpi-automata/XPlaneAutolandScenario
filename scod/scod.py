@@ -12,8 +12,8 @@ from torch.cuda.amp.autocast_mode import autocast
 
 from tqdm.autonotebook import tqdm
 
-from .sketching.sketched_pca import alg_registry
-from .sketching.utils import random_subslice
+from scod.sketching.sketched_pca import alg_registry
+from scod.sketching.utils import random_subslice
 from .distributions import DistributionLayer
 
 
@@ -369,12 +369,13 @@ class SCOD(nn.Module):
         )
 
         n_data = len(dataloader)
-        for i, (inputs, labels) in tqdm(enumerate(dataloader), total=n_data):
+        for i, (inputs, orient_alts, labels) in tqdm(enumerate(dataloader), total=n_data):
             inputs = inputs.to(device, non_blocking=True)
             labels = labels.to(device, non_blocking=True)
+            orient_alts = orient_alts.to(device, non_blocking=True)
 
             with autocast():
-                z = self.model(inputs)
+                z = self.model(inputs, orient_alts)
                 if self.metric_threshold is not None:
                     metric = dist_layer.metric(z, labels).mean()
                     if metric > self.metric_threshold:
@@ -474,6 +475,7 @@ class SCOD(nn.Module):
         n_eigs: Optional[int] = None,
         prior_multiplier: float = 1.,
         T: Optional[int] = None,
+        orient_alt: Optional[List] = None
     ) -> Tuple[List[torch.distributions.Distribution], torch.Tensor]:
         """
         assumes inputs are of shape (N, input_dims...)
@@ -500,7 +502,7 @@ class SCOD(nn.Module):
         N = inputs.shape[0]  # batch size
         device = inputs.device # used to ensure compatibility of constructed tensors
 
-        z_mean = self.model(inputs)  # batch of outputs
+        z_mean = self.model(inputs, orient_alt)  # batch of outputs
         flat_z = z_mean.view(N, -1)  # batch of flattened outputs
         flat_z_shape = flat_z.shape[-1]  # flattened output size
 
@@ -545,7 +547,7 @@ class OodDetector(nn.Module):
         self.dist_layer = dist_layer
 
     def _entropy_signal(self, x, orient_alt):
-        z_mean, z_var = self.scod_model(x, orient_alt)
+        z_mean, z_var = self.scod_model(x, orient_alt=orient_alt)
         dist = self.dist_layer.marginalize_gaussian(z_mean, z_var)
         return dist.entropy()
 
