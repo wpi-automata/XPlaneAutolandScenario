@@ -3,12 +3,14 @@ import sys
 import csv
 import time
 import torch 
+import math
 from datetime import date
 from pathlib import Path
 
 # Order of bounds: 'phi', 'theta', 'psi', 'x', 'y', 'h'
-upper_bounds = [0, 0, 0, 0, 0, 0]
-lower_bounds = [0, 0, 0, 0, 0, 0]
+rads = math.radians(10)
+tan = math.tan(rads) #tangent of 10 degrees (in radians)
+runway_dist = 17000
 
 def get_safe(save_dir, data_dir):
     statepath = Path(f"{save_dir}/safe_set.csv")
@@ -22,11 +24,18 @@ def get_safe(save_dir, data_dir):
 
     with open(f"{data_dir}/states.csv") as states_file: #Another line to make sure consistent 
         csv_reader = csv.reader(states_file, delimiter=',')
+        h_initial = float(next(csv_reader)[5])
+        slope = h_initial / runway_dist
         for row in csv_reader:
             safe = True
-            for i in range(len(row) - 1):
-                item = float(row[i])
-                if (item > upper_bounds[i]) and (item < lower_bounds[i]): #if item is outside bounds, reject
+            x = float(row[3]) #Distance from runway
+            r = tan * math.sqrt(pow(x, 2) + pow((x * slope), 2)) #Radius of safe set
+            upper_bounds = [r, r, (x * slope) + r]
+            lower_bounds = [r * -1, r * -1, (x * slope) - r]
+            for i in range(3):
+                item = float(row[3 + i]) #Skip phi, theta, and psi
+                print(i)
+                if (item > upper_bounds[i]) or (item < lower_bounds[i]): #if item is outside bounds, reject
                     safe = False
                     break
             if safe:
