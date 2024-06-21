@@ -28,7 +28,7 @@ def combine_data(save_dir, states, gen_states):
                 else:
                     #Get errors of the NN 
                     error_h = float(row2[1]) - float(row2[2])
-                    error_y = float(row1[4]) - float(row2[0])
+                    error_y = float(row1[4]) - float(row2[0]) #y - y_err = error of NN = ehat - e = e' in crosstrack (Note: put on y axis)
                     #Record everything else (looking back could also add in the predicted values to this set- took care of this in MATLAB script but kind of annoying)
                     phi = row1[0]
                     theta = row1[1]
