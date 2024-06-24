@@ -47,7 +47,7 @@ scod_model = scod.SCOD(model)
 
 data_dir = "/media/storage_drive/ULI Datasets/OOD Data/dataWPI_200-15"
 full_dataset = AutolandImageDataset(f"{data_dir}/states.csv", f"{data_dir}/images")
-train_size = int(0.95 * len(full_dataset))
+train_size = int(0.92 * len(full_dataset))
 val_size = len(full_dataset) - train_size
 train_dataset, val_dataset = torch.utils.data.random_split(full_dataset, [train_size, val_size])
 # might need to experiment with different values for "batch_size" and "lr"
@@ -59,17 +59,17 @@ print(type(train_dataset.dataset.img_labels))
 #scod_model.process_dataset(train_dataset, dist_layer)
 #torch.save(scod_model.state_dict(), "/home/achadbo/XPlaneAutolandScenario/models/scod/2024-6-18/scod_model_200_80percent.pt")
 
+rwy_imgs, orient_alts, labels  = next(iter(val_dataloader))
+indices = val_dataset.indices
+ood_detector = scod.OodDetector(scod_model, dist_layer)
+ood_signal = ood_detector(rwy_imgs, orient_alts)
+print("Signals calculated")
+
 statepath = Path(f"/home/achadbo/XPlaneAutolandScenario/Subsets/scod_200")
 if not statepath.is_file():
     with open(str(statepath), 'w') as f:
         writer = csv.writer(f)
         writer.writerow(['phi', 'theta', 'psi', 'x', 'y', 'h', 'img source', 'signal'])
-
-rwy_imgs, orient_alts, labels  = next(iter(val_dataloader))
-indices = val_dataset.indices
-ood_detector = scod.OodDetector(scod_model, dist_layer)
-ood_signal = ood_detector(rwy_imgs, orient_alts)
-#print(ood_signal)
 
 f = open(str(statepath), 'a')
 writer = csv.writer(f)
@@ -79,7 +79,7 @@ with open(f"{data_dir}/states.csv") as states_file:
     for index in indices:
         states_file.seek(0)
         data = next(itertools.islice(csv.reader(states_file), index, None))
-        signal = ood_signal[i]
+        signal = float(ood_signal[i])
         data.append(signal)
         writer.writerow(data)
         i += 1
