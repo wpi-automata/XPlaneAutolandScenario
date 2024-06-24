@@ -24,27 +24,29 @@ def get_safe(save_dir, data_dir):
 
     with open(f"{data_dir}/states.csv") as states_file: #Another line to make sure consistent 
         csv_reader = csv.reader(states_file, delimiter=',')
-        h_initial = float(next(csv_reader)[5])
+        h_initial = 1411.9541015625 #Pulled from max of h in state file. TODO: Find way to automate
         slope = h_initial / runway_dist
+        rows = 0
         for row in csv_reader:
             safe = True
             x = float(row[3]) #Distance from runway
             r = tan * math.sqrt(pow(x, 2) + pow((x * slope), 2)) #Radius of safe set
-            upper_bounds = [r, r, (x * slope) + r]
-            lower_bounds = [r * -1, r * -1, (x * slope) - r]
-            for i in range(3):
-                item = float(row[3 + i]) #Skip phi, theta, and psi
-                print(i)
+            upper_bounds = [r, (x * slope) + r]
+            lower_bounds = [r * -1, (x * slope) - r]
+            for i in range(2):
+                item = float(row[4 + i]) #Skip phi, theta, and psi
                 if (item > upper_bounds[i]) or (item < lower_bounds[i]): #if item is outside bounds, reject
+                    rows += 1
                     safe = False
                     break
             if safe:
                 writer.writerow(row)
+        print("Rows removed from OG file: " + str(rows))
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Get the subset of NN data that is considered 'safe'")
-    parser.add_argument("--data-dir", help="The path to the dataset", default="/media/storage_drive/ULI Datasets/OOD Data/dataWPI_50-10")
+    parser.add_argument("--data-dir", help="The path to the dataset", default="/media/storage_drive/ULI Datasets/dataWPI_17000")
     args = parser.parse_args()
 
     this_dir = Path(__file__).parent

@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["--model","/home/achadbo/XPlaneAutolandScenario/models/2024-4-1/best_model_params.pt"]
+            "args": ["--data-dir","/media/storage_drive/ULI Datasets/dataWPI_17000"]
         }
     ]
 }
