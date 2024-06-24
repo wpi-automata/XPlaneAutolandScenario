@@ -13,7 +13,7 @@ from src.xplane_autoland.vision.perception import AutolandPerceptionModel
 from src.xplane_autoland.vision.xplane_data import AutolandImageDataset
 from src.xplane_autoland.controllers.glideslope_controller import GlideSlopeController
 
-def generate_data(plane, dataloader, save_dir):
+def generate_data(plane, dataloader, save_dir, data_dir):
     gsc = GlideSlopeController(gamma=3)
     print(f"Attempting to save data...")
     statepath = Path(f"{save_dir}/generated_states.csv")
@@ -28,7 +28,7 @@ def generate_data(plane, dataloader, save_dir):
     #Iterate over the dataset
     #processed states values for reference: phi,theta,psi,x,y,h,imagename- you'll need to enter the states.csv file and make sure the strings are deleted 
     print(f"Iterating over the data")
-    with open(f"/media/storage_drive/ULI Datasets/OOD Data/dataWPI_50-10/states.csv") as states_file: #Another line to make sure consistent 
+    with open(f"{data_dir}/states.csv") as states_file: #Another line to make sure consistent 
         csv_reader = csv.reader(states_file, delimiter=',')
         for row, (rwy_img, orient_alt, _ ) in zip(csv_reader, dataloader):
     
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     parser.add_argument("--save-dir", help="The directory to save everything in", default=None)
     parser.add_argument("--data-dir", help="The directory with image data should contain a states.csv and images directory", default=None)
     parser.add_argument("--resnet-version", help="Choose which resnet to use", default="50", choices=["18", "50"])
-    parser.add_argument("--model", help="The path to model parameters (*.pt) for a vision network. Note must have XPlane fullscreen for screenshots", default=None)
+    parser.add_argument("--model", help="The path to model parameters (*.pt) for a vision network.", default=None)
     parser.add_argument("--offset", help="The number of meters in distance offset", default="450")
     args = parser.parse_args()
 
@@ -83,4 +83,4 @@ if __name__ == '__main__':
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False, num_workers=1)
 
     #2: Generate Data
-    generate_data(plane, dataloader, save_dir)
+    generate_data(plane, dataloader, save_dir, data_dir)
