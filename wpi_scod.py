@@ -12,6 +12,8 @@ from tqdm import trange
 import csv
 from pathlib import Path
 import itertools
+import numpy
+import math
 
 from matplotlib import pyplot as plt
 from src.xplane_autoland.vision.perception import AutolandPerceptionModel
@@ -39,33 +41,47 @@ from src.xplane_autoland.vision.xplane_data import AutolandImageDataset
 # OR dist_layer = scod.distributions.NormalMeanDiagVarParamLayer()
 
 ## Attach dist layer to model and train it with our dataset
-model = AutolandPerceptionModel()
-model.load("/home/achadbo/XPlaneAutolandScenario/models/2024-4-1/best_model_params.pt")
 dist_layer = scod.distributions.NormalMeanParamLayer()
 
-scod_model = scod.SCOD(model)
 
-data_dir = "/media/storage_drive/ULI Datasets/OOD Data/dataWPI_200-15"
+
+# torchscript = torch.jit.load("/home/achadbo/XPlaneAutolandScenario/models/scod/2024-6-18/scod_model_200_80percent.pt")
+# torchscript.eval()
+scod_model = torch.load("models/scod/2024-6-24/scod_model_12464_80percent.pt")
+scod_model.eval()
+# scod_model = scod.SCOD(model)
+
+
+
+
+data_dir = "/media/storage_drive/ULI Datasets/OOD Data/dataWPI_400-15"
 full_dataset = AutolandImageDataset(f"{data_dir}/states.csv", f"{data_dir}/images")
-train_size = int(0.92 * len(full_dataset))
+train_size = int(0.75 * len(full_dataset))
 val_size = len(full_dataset) - train_size
 train_dataset, val_dataset = torch.utils.data.random_split(full_dataset, [train_size, val_size])
 # might need to experiment with different values for "batch_size" and "lr"
-val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=val_size, shuffle=False)
-
-# optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
-
-print(type(train_dataset.dataset.img_labels))
-#scod_model.process_dataset(train_dataset, dist_layer)
-#torch.save(scod_model.state_dict(), "/home/achadbo/XPlaneAutolandScenario/models/scod/2024-6-18/scod_model_200_80percent.pt")
-
-rwy_imgs, orient_alts, labels  = next(iter(val_dataloader))
+batch = 600
+val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=batch, shuffle=False)
 indices = val_dataset.indices
+print(type(train_dataset.dataset.img_labels))
+
+ood_signals = []
 ood_detector = scod.OodDetector(scod_model, dist_layer)
-ood_signal = ood_detector(rwy_imgs, orient_alts)
+print("Size of dataset: " + str(val_size))
+print("Batch size: " + str(batch))
+total_batches = math.ceil(val_size / batch)
+print("Total number of batches: " + str(total_batches))
+for i in range(total_batches):
+    rwy_imgs, orient_alts, labels  = next(iter(val_dataloader))
+    ood_signal = ood_detector(rwy_imgs, orient_alts)
+    temp = ood_signal.detach().numpy()
+    ood_signals = numpy.append(ood_signals, temp)
+    print("Batches completed: " + str(i + 1))
 print("Signals calculated")
 
-statepath = Path(f"/home/achadbo/XPlaneAutolandScenario/Subsets/scod_200")
+
+
+statepath = Path(f"/home/achadbo/XPlaneAutolandScenario/Subsets/scod_400")
 if not statepath.is_file():
     with open(str(statepath), 'w') as f:
         writer = csv.writer(f)
@@ -79,7 +95,7 @@ with open(f"{data_dir}/states.csv") as states_file:
     for index in indices:
         states_file.seek(0)
         data = next(itertools.islice(csv.reader(states_file), index, None))
-        signal = float(ood_signal[i])
+        signal = float(ood_signals[i])
         data.append(signal)
         writer.writerow(data)
         i += 1
