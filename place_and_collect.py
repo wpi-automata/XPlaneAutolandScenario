@@ -25,9 +25,9 @@ max_degrees   = 15.
 dphi_sigma    = max_degrees/3
 dtheta_sigma  = max_degrees/3
 dpsi_sigma    = max_degrees/3
-dx_bounds     = [-450, 450]
-dy_bounds     = [-450, 450]
-dh_bounds     = [-450, 450]
+dx_bounds     = [-150, 150]
+dy_bounds     = [-150, 150]
+dh_bounds     = [-150, 150]
 
 
 model = AutolandPerceptionModel()
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     time.sleep(4)
     print('Starting...')
 
-    save_dir = Path("./dataWPI_450-15") #Need to make sure we change this 
+    save_dir = Path("/media/storage_drive/ULI Datasets/dataWPI_12464_new") #Need to make sure we change this 
     if not save_dir.exists():
         save_dir.mkdir()
     images_dir = save_dir / "images"
