@@ -43,7 +43,7 @@ def data_for_x(driver, x_center, num_samples, save_dir):
     start_elev = driver._start_elev
     slope = float(start_elev - h_thresh) / driver._start_ground_range
 
-    statepath = Path(f"./{save_dir}/states.csv")
+    statepath = Path(f"{save_dir}/states.csv")
     if not statepath.is_file():
         with open(str(statepath), 'w') as f:
             writer = csv.writer(f)
@@ -94,7 +94,7 @@ def data_for_x(driver, x_center, num_samples, save_dir):
                 print(f'Actual: {actual_orient_pos}')
             nv_pairs = zip(['phi', 'theta', 'psi', 'x', 'y', 'h'], actual_orient_pos)
             statestr = '_'.join([p0 + str(int(p1)) for p0, p1 in nv_pairs])
-            fname = f'./{save_dir}/images/image_{statestr}.pt'
+            fname = f'{save_dir}/images/image_{statestr}.pt'
             sct_img = sct.grab(sct.monitors[1])
             pil_img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
             #pil_img.show()
@@ -134,14 +134,15 @@ if __name__ == '__main__':
     driver.reset()
     time.sleep(4)
     print('Starting...')
+    print(f"x_center: {args.x_center}")
 
-    save_dir = Path("/media/storage_drive/ULI Datasets/dataWPI_12464_new") #Need to make sure we change this 
+    save_dir = Path("/home/achadbo/Desktop/dataWPI_12464_new") #Need to make sure we change this 
     if not save_dir.exists():
         save_dir.mkdir()
     images_dir = save_dir / "images"
     if not images_dir.exists():
         images_dir.mkdir()
-    with open(f"./{save_dir}/config.txt", "w") as f:
+    with open(f"{save_dir}/config.txt", "w") as f:
         f.write(f"Save Directory: {save_dir}\n")
         f.write(f"Seed: {args.seed}\n")
     sweep_x(driver, args.num_samples, args.x_center,  save_dir=save_dir)
