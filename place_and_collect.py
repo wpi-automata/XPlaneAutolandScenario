@@ -6,6 +6,7 @@ import numpy as np
 from pathlib import Path
 import random
 import time
+import math
 #from tqdm import tqdm
 
 from PIL import Image
@@ -29,6 +30,11 @@ dx_bounds     = [-50, 50]
 dy_bounds     = [-50, 50]
 dh_bounds     = [-50, 50]
 
+rads = math.radians(10)
+tan = math.tan(rads) #tangent of 3.5 degrees (in radians)
+
+max_x = 1000
+
 
 model = AutolandPerceptionModel()
 transform = model.preprocess
@@ -36,12 +42,12 @@ to_tensor = transforms.PILToTensor()
 
 
 def data_for_x(driver, x_center, num_samples, save_dir):
-    print(f"Saving data for x={x_center}")
     gsc    = GlideSlopeController(gamma=3)
 
     h_thresh = gsc._h_thresh
-    start_elev = driver._start_elev
-    slope = float(start_elev - h_thresh) / driver._start_ground_range
+    start_elev = max_x * tan #replaced with math bc not sure how to change driver to not have weird defaults
+    slope = float(start_elev) / max_x
+    print(f"Slope for x_center {x_center}: {slope}")
 
     statepath = Path(f"{save_dir}/states.csv")
     if not statepath.is_file():
@@ -63,8 +69,11 @@ def data_for_x(driver, x_center, num_samples, save_dir):
             dphi = random.normalvariate(0., dphi_sigma)
             dtheta = random.normalvariate(0., dtheta_sigma)
             dpsi = random.normalvariate(0., dpsi_sigma)
+
             dx = float(random.randint(*dx_bounds))
-            dy = float(random.randint(*dy_bounds))
+            r = int(tan * math.sqrt(pow(dx + x_center, 2) + pow(((dx + x_center) * slope), 2)))
+            dy = random.uniform(*[-r, r])
+            dh_bounds = [int((dx * slope) - r), int((dx * slope) + r)]
             dh = float(random.randint(*dh_bounds))
             if h_center+dh < gsc._runway_elev:
                 continue
@@ -136,7 +145,7 @@ if __name__ == '__main__':
     print('Starting...')
     print(f"x_center: {args.x_center}")
 
-    save_dir = Path("/home/achadbo/Desktop/dataWPI_1000_50") #Need to make sure we change this 
+    save_dir = Path("/home/achadbo/Desktop/trash") #Need to make sure we change this 
     if not save_dir.exists():
         save_dir.mkdir()
     images_dir = save_dir / "images"
@@ -145,5 +154,7 @@ if __name__ == '__main__':
     with open(f"{save_dir}/config.txt", "w") as f:
         f.write(f"Save Directory: {save_dir}\n")
         f.write(f"Seed: {args.seed}\n")
+    
+    max_x = args.x_center - 100 + dx_bounds[1]
     sweep_x(driver, args.num_samples, args.x_center,  save_dir=save_dir)
     #data_for_x(driver, args.x_center, args.num_samples, save_dir=save_dir)
