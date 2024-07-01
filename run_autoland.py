@@ -15,6 +15,7 @@ from src.xplane_autoland.vision.perception import AutolandPerceptionModel
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run the autoland scenario at KMWH Grant County International Airport Runway 04. You must start XPlane and choose the airport + a Cessna separately.")
     parser.add_argument("--model", help="The path to model parameters (*.pt) for a vision network. Note must have XPlane fullscreen for screenshots", default=None)
+    parser.add_argument("--collect" , help="Boolean varible indicating if state information and images of the autolanding will be collected", default=False)
     args = parser.parse_args()
 
     ##Save state information to a file##
