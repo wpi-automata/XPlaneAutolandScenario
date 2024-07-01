@@ -6,11 +6,33 @@ import time
 from datetime import date
 from pathlib import Path
 import csv
+import mss
+from PIL import Image
+import torch
+from torchvision import transforms
 
 from src.xplane_autoland.controllers.glideslope_controller import GlideSlopeController
 from src.xplane_autoland.xplane_connect.vision_driver import XPlaneVisionDriver
 from src.xplane_autoland.xplane_connect.driver import XPlaneDriver
 from src.xplane_autoland.vision.perception import AutolandPerceptionModel
+
+basic_model = AutolandPerceptionModel()
+transform = basic_model.preprocess
+to_tensor = transforms.PILToTensor()
+
+def collect_image(sct, pos, save_dir, writer): #Code from place_and_collect.py
+    nv_pairs = zip(['phi', 'theta', 'psi', 'x', 'y', 'h'], pos)
+    statestr = '_'.join([p0 + str(int(p1)) for p0, p1 in nv_pairs])
+    fname = f'{save_dir}/images/image_{statestr}.pt'
+    sct_img = sct.grab(sct.monitors[1])
+    pil_img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+    img = to_tensor(pil_img)
+    img = transform(img)
+    torch.save(img, fname)
+    phi, theta, psi, x, y, h = pos
+    # print(f"x: {x}. y: {y}. h: {h}")
+    writer.writerow([phi, theta, psi, x, y, h, fname])
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run the autoland scenario at KMWH Grant County International Airport Runway 04. You must start XPlane and choose the airport + a Cessna separately.")
@@ -35,6 +57,21 @@ if __name__ == '__main__':
 
     f = open(str(statepath), 'a')
     writer = csv.writer(f)
+
+    if args.collect:
+        img_dir = Path("/home/achadbo/Desktop/Autoland/7-1-2024_1000")
+        img_path = Path(f"{img_dir}/states.csv")
+        if not img_path.is_file():
+            with open(str(img_path), 'w') as f:
+                img_writer = csv.writer(f)
+                img_writer.writerow(['phi', 'theta', 'psi', 'x', 'y', 'h', 'imagename'])
+
+        f2 = open(str(img_path), 'a')
+        img_writer = csv.writer(f2)
+        
+        images_dir = img_dir / "images"
+        if not images_dir.exists():
+            images_dir.mkdir()
     ####################################
 
     WITH_VISION = False
@@ -62,12 +99,13 @@ if __name__ == '__main__':
     # distance from the runway crossing (decrease to start closer)
     # vision mode works best at 9000m and less (up until right before landing)
     # need to train more at higher distances and close up
-    x_val = 12464
+    x_val = 1000
     init_h = slope * x_val + h_thresh
     # can set the state arbitrarily (see reset documentation for semantics)
     plane.reset(init_x=x_val, init_h=init_h)
     plane.pause(False)
 
+    sct = mss.mss()
     try:
         last_time = time.time()
         for step in range(math.ceil(max_time/dt)):
@@ -92,6 +130,8 @@ if __name__ == '__main__':
                 writer.writerow([phi, theta, psi, x, y, y_pred, h, h_err, h_err_pred, y_err_NN, h_err_NN]) #Write to the file at each iteration 
                 # print("Y: %f", y_1)
 
+            if args.collect:
+                collect_image(sct, [phi, theta, psi, x, y, h], img_dir, img_writer)
             elevator, aileron, rudder, throttle = gsc.control(state, err_h=h_err_pred)
             # the runway slopes down so this works fine
             if h <= gsc.runway_elevation and x <= 0:
