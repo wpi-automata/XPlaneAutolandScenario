@@ -25,9 +25,9 @@ max_degrees   = 15.
 dphi_sigma    = max_degrees/3
 dtheta_sigma  = max_degrees/3
 dpsi_sigma    = max_degrees/3
-dx_bounds     = [-150, 150]
-dy_bounds     = [-150, 150]
-dh_bounds     = [-150, 150]
+dx_bounds     = [-50, 50]
+dy_bounds     = [-50, 50]
+dh_bounds     = [-50, 50]
 
 
 model = AutolandPerceptionModel()
@@ -136,7 +136,7 @@ if __name__ == '__main__':
     print('Starting...')
     print(f"x_center: {args.x_center}")
 
-    save_dir = Path("/home/achadbo/Desktop/dataWPI_12464_new") #Need to make sure we change this 
+    save_dir = Path("/home/achadbo/Desktop/dataWPI_1000_50") #Need to make sure we change this 
     if not save_dir.exists():
         save_dir.mkdir()
     images_dir = save_dir / "images"
