@@ -59,7 +59,7 @@ if __name__ == '__main__':
     writer = csv.writer(f)
 
     if args.collect:
-        img_dir = Path("/home/achadbo/Desktop/Autoland/7-1-2024_1000")
+        img_dir = Path("/home/achadbo/Desktop/Autoland/7-2-2024_1000")
         img_path = Path(f"{img_dir}/states.csv")
         if not img_path.is_file():
             with open(str(img_path), 'w') as f:
