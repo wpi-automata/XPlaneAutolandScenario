@@ -45,8 +45,8 @@ def data_for_x(driver, x_center, num_samples, save_dir):
     gsc    = GlideSlopeController(gamma=3)
 
     h_thresh = gsc._h_thresh
-    start_elev = max_x * tan #replaced with math bc not sure how to change driver to not have weird defaults
-    slope = float(start_elev) / max_x
+    start_elev = 470 # max_x * tan #replaced with math bc not sure how to change driver to not have weird defaults
+    slope = float(start_elev - h_thresh) / max_x
     print(f"Slope for x_center {x_center}: {slope}")
 
     statepath = Path(f"{save_dir}/states.csv")
@@ -145,7 +145,7 @@ if __name__ == '__main__':
     print('Starting...')
     print(f"x_center: {args.x_center}")
 
-    save_dir = Path("/home/achadbo/Desktop/trash") #Need to make sure we change this 
+    save_dir = Path("/home/achadbo/Desktop/dataWPI_1500_50_10") #Need to make sure we change this 
     if not save_dir.exists():
         save_dir.mkdir()
     images_dir = save_dir / "images"
@@ -155,6 +155,6 @@ if __name__ == '__main__':
         f.write(f"Save Directory: {save_dir}\n")
         f.write(f"Seed: {args.seed}\n")
     
-    max_x = args.x_center - 100 + dx_bounds[1]
+    max_x = args.x_center - 100 + dx_bounds[1] # The actual maximum value of x that can be reached. Used for slope
     sweep_x(driver, args.num_samples, args.x_center,  save_dir=save_dir)
     #data_for_x(driver, args.x_center, args.num_samples, save_dir=save_dir)
