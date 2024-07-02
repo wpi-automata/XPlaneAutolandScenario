@@ -45,8 +45,8 @@ def data_for_x(driver, x_center, num_samples, save_dir):
     gsc    = GlideSlopeController(gamma=3)
 
     h_thresh = gsc._h_thresh
-    start_elev = 470 # max_x * tan #replaced with math bc not sure how to change driver to not have weird defaults
-    slope = float(start_elev - h_thresh) / max_x
+    start_elev = 704 # max_x * tan #replaced with math bc not sure how to change driver to not have weird defaults
+    slope = tan # float(start_elev - h_thresh) / max_x
     print(f"Slope for x_center {x_center}: {slope}")
 
     statepath = Path(f"{save_dir}/states.csv")
