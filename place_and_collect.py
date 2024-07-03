@@ -31,7 +31,7 @@ dy_bounds     = [-50, 50]
 dh_bounds     = [-50, 50]
 
 rads = math.radians(10)
-tan = math.tan(rads) #tangent of 3.5 degrees (in radians)
+tan = math.tan(rads) #tangent of 10 degrees (in radians)
 
 max_x = 1000
 
