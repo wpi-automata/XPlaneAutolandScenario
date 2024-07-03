@@ -123,7 +123,7 @@ def data_for_x(driver, x_center, num_samples, save_dir):
 
 def sweep_x(driver, num_samples, distance, save_dir):
     # parameter sweeps
-    x_sweep      = np.arange(0., distance, 100.)
+    x_sweep      = np.arange(700., distance, 100.)
     for x_center in x_sweep:
         data_for_x(driver, x_center, num_samples, save_dir)
 
@@ -145,7 +145,7 @@ if __name__ == '__main__':
     print('Starting...')
     print(f"x_center: {args.x_center}")
 
-    save_dir = Path("/home/achadbo/Desktop/dataWPI_1500_50_10") #Need to make sure we change this 
+    save_dir = Path("/media/storage_drive/ULI Datasets/dataWPI_1500_50_10") #Need to make sure we change this 
     if not save_dir.exists():
         save_dir.mkdir()
     images_dir = save_dir / "images"
