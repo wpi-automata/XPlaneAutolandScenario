@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
     if args.collect:
         print("Collecting images and states")
-        img_dir = Path("/home/achadbo/Desktop/Autoland/7-3-2024_1000")
+        img_dir = Path("/home/achadbo/Desktop/Autoland/7-10-2024_1000/Slope5")
         img_path = Path(f"{img_dir}/states.csv")
         if not img_path.is_file():
             with open(str(img_path), 'w') as f:
@@ -91,17 +91,18 @@ if __name__ == '__main__':
     dt = 0.1
     max_time = 600
 
-    gsc = GlideSlopeController(gamma=3, dt=dt)
+    target_deg = 5
+    gsc = GlideSlopeController(gamma=target_deg, dt=dt)
     # the altitude of the runway threshold
     h_thresh = gsc.runway_threshold_height
     start_elev = plane._start_elev
-    # slope = float(start_elev - h_thresh) / plane._start_ground_range
-    slope = 0.061162620150484 #tangent of 3.5deg
+    #slope = float(start_elev - h_thresh) / plane._start_ground_range
+    slope = 0.1763269807 / 2 #tangent of 5deg
 
     # distance from the runway crossing (decrease to start closer)
     # vision mode works best at 9000m and less (up until right before landing)
     # need to train more at higher distances and close up
-    x_val = 1000
+    x_val = 5000
     init_h = slope * x_val + h_thresh
     # can set the state arbitrarily (see reset documentation for semantics)
     plane.reset(init_x=x_val, init_h=init_h)
