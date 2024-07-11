@@ -7,7 +7,7 @@ from torchvision.io import read_image
 import warnings
 import sys
 sys.path.append('/home/agchadbo/XPlaneAutolandScenario/src/xplane_autoland')
-from controllers.glideslope_controller import GlideSlopeController
+from xplane_autoland.controllers.glideslope_controller import GlideSlopeController
 
 class AutolandImageDataset(Dataset):
     def __init__(self, annotations_file, img_dir, transform=None, target_transform=None, load_png=False,
