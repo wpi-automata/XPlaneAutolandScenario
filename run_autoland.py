@@ -38,29 +38,24 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run the autoland scenario at KMWH Grant County International Airport Runway 04. You must start XPlane and choose the airport + a Cessna separately.")
     parser.add_argument("--model", help="The path to model parameters (*.pt) for a vision network. Note must have XPlane fullscreen for screenshots", default=None)
     parser.add_argument("--collect" , help="Boolean varible indicating if state information and images of the autolanding will be collected", default=False)
+    parser.add_argument("--start-dist", help="The starting distance of the plane from the runway.", default=3000)
+    parser.add_argument("--gamma", help="The desired angle for the plane to follow along the glidescope", default=3.5)
+    parser.add_argument("--lateral-dev", help="How far the plane should laterally deviate from the glidescope", default=0)
     args = parser.parse_args()
 
     ##Save state information to a file##
     this_dir = Path(__file__).parent
     repo_dir = this_dir.resolve()
 
-    today = date.today()
-    save_dir = Path(f"{repo_dir}/autoland_errors/{today.year}-{today.month}-{today.day}")
-    if not save_dir.exists():
-        save_dir.mkdir()
-
-    statepath = Path(f"{save_dir}/Trial15-12464_states.csv") #12464 corresponds to start distance from the runway
-    if not statepath.is_file():
-        with open(str(statepath), 'w') as f:
-            writer = csv.writer(f)
-            writer.writerow(['phi, theta, psi, x, y, y_pred, h, h_err, h_err_pred, y_err_NN, h_err_NN'])
-
-    f = open(str(statepath), 'a')
-    writer = csv.writer(f)
-
     if args.collect:
         print("Collecting images and states")
-        img_dir = Path("/home/achadbo/Desktop/Autoland/7-10-2024/5000/5")
+        img_dir = Path(f"/home/achadbo/Desktop/Autoland/7-11-2024/{args.start_dist}")
+        if not img_dir.exists():
+            img_dir.mkdir()
+        img_dir = Path(f"{img_dir}/Gamma{args.gamma}_LatDev{args.lateral_dev}")
+        if not img_dir.exists():
+            img_dir.mkdir()
+        
         img_path = Path(f"{img_dir}/states.csv")
         if not img_path.is_file():
             with open(str(img_path), 'w') as f:
@@ -83,6 +78,20 @@ if __name__ == '__main__':
         model.load(args.model)
         model.eval()
         plane = XPlaneVisionDriver(model)
+
+        today = date.today()
+        save_dir = Path(f"{repo_dir}/autoland_errors/{today.year}-{today.month}-{today.day}")
+        if not save_dir.exists():
+            save_dir.mkdir()
+
+        statepath = Path(f"{save_dir}/Trial15-12464_states.csv") #12464 corresponds to start distance from the runway
+        if not statepath.is_file():
+            with open(str(statepath), 'w') as f:
+                writer = csv.writer(f)
+                writer.writerow(['phi, theta, psi, x, y, y_pred, h, h_err, h_err_pred, y_err_NN, h_err_NN'])
+
+        f = open(str(statepath), 'a')
+        writer = csv.writer(f)        
     else:
         plane = XPlaneDriver()
 
@@ -91,7 +100,7 @@ if __name__ == '__main__':
     dt = 0.1
     max_time = 600
 
-    target_deg = 5
+    target_deg = float(args.gamma)
     gsc = GlideSlopeController(gamma=target_deg, dt=dt)
     # the altitude of the runway threshold
     h_thresh = gsc.runway_threshold_height
@@ -102,10 +111,11 @@ if __name__ == '__main__':
     # distance from the runway crossing (decrease to start closer)
     # vision mode works best at 9000m and less (up until right before landing)
     # need to train more at higher distances and close up
-    x_val = 5000
+    x_val = args.start_dist
     init_h = slope * x_val + h_thresh
+    init_y = int(args.lateral_dev)
     # can set the state arbitrarily (see reset documentation for semantics)
-    plane.reset(init_x=x_val, init_h=init_h)
+    plane.reset(init_x=x_val, init_h=init_h, init_y=init_y)
     plane.pause(False)
 
     sct = mss.mss()
