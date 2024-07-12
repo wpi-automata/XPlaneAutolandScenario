@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["--collect", "True", "--lateral-dev", "50"]
+            "args": ["--data-dir", "/media/storage_drive/ULI Datasets/dataWPI_1500_50_10/safe/2024-7-11"]
         }
     ]
 }
