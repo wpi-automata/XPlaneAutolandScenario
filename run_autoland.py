@@ -111,7 +111,7 @@ if __name__ == '__main__':
     # distance from the runway crossing (decrease to start closer)
     # vision mode works best at 9000m and less (up until right before landing)
     # need to train more at higher distances and close up
-    x_val = args.start_dist
+    x_val = float(args.start_dist)
     init_h = slope * x_val + h_thresh
     init_y = int(args.lateral_dev)
     # can set the state arbitrarily (see reset documentation for semantics)
