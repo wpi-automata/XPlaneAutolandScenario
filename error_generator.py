@@ -30,6 +30,7 @@ def generate_data(plane, dataloader, save_dir, data_dir):
     print(f"Iterating over the data")
     with open(f"{data_dir}/states.csv") as states_file: #Another line to make sure consistent 
         csv_reader = csv.reader(states_file, delimiter=',')
+        next(csv_reader)
         for row, (rwy_img, orient_alt, _ ) in zip(csv_reader, dataloader):
     
             #iterate over the data and pass it into est_state
