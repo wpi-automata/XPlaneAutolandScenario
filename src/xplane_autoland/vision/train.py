@@ -19,6 +19,7 @@ import torch.optim as optim
 from torch.optim import lr_scheduler
 import torch.backends.cudnn as cudnn
 from torch.utils.tensorboard import SummaryWriter
+import re
 
 from perception import AutolandPerceptionModel
 from xplane_data import AutolandImageDataset
@@ -156,6 +157,13 @@ def train_model(model, criterion, optimizer, dataloaders, dataset_sizes,
     return model
 
 
+def get_max(data_dir): #Assumes file naming format of dataWPI_initialDistance_maxOffset_etc
+    start_offset = re.findall("dataWPI_\d+_\d+", data_dir)
+    start_offset = re.split("_", start_offset[0])
+    init_dist = float(start_offset[1])
+    offset = float(start_offset[2])
+    return [init_dist, offset]
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Train a state essrc.xplane_autoland.timator for the autoland scenario")
     parser.add_argument("--seed", type=int, default=0, help="The random seed")
@@ -194,7 +202,7 @@ if __name__ == '__main__':
 
     # Step 1: Initialize model with the best available weights
     model = AutolandPerceptionModel(resnet_version=args.resnet_version,
-                                    freeze=not args.unfreeze)
+                                    freeze=not args.unfreeze, keep_h=True)
     if args.start_model is not None:
         print("Loading correct backbone")
         logger.info(f"Loading model from: {args.start_model}")
@@ -205,7 +213,8 @@ if __name__ == '__main__':
     if data_dir is None:
         data_dir=str(repo_dir/"dataWPI_50-10")
     logger.info(f"Using data from: {data_dir}")
-    full_dataset = AutolandImageDataset(f"{data_dir}/states.csv", f"{data_dir}/images")
+    max_values = get_max(data_dir)
+    full_dataset = AutolandImageDataset(f"{data_dir}/states.csv", f"{data_dir}/images", max_value=max_values[0], offset=max_values[1], keep_h=True)
     train_size = int(0.8 * len(full_dataset))
     val_size = len(full_dataset) - train_size
     logger.info(f"Dataset Train size: {train_size}, Val size: {val_size}")
