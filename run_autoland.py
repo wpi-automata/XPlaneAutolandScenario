@@ -41,6 +41,7 @@ if __name__ == '__main__':
     parser.add_argument("--start-dist", help="The starting distance of the plane from the runway.", default=3000)
     parser.add_argument("--gamma", help="The desired angle for the plane to follow along the glidescope", default=3.5)
     parser.add_argument("--lateral-dev", help="How far the plane should laterally deviate from the glidescope", default=0)
+    parser.add_argument("--keep_h", help="Was the model trained with or without h_err calculations", default=True)
     args = parser.parse_args()
 
     ##Save state information to a file##
@@ -74,10 +75,10 @@ if __name__ == '__main__':
     if args.model:
         WITH_VISION=True
         print(args.model)
-        model = AutolandPerceptionModel(resnet_version="50")
+        model = AutolandPerceptionModel(resnet_version="50", keep_h=args.keep_h)
         model.load(args.model)
         model.eval()
-        plane = XPlaneVisionDriver(model)
+        plane = XPlaneVisionDriver(model, start_ground_range=float(args.start_dist), keep_h=args.keep_h)
 
         today = date.today()
         save_dir = Path(f"{repo_dir}/autoland_errors/{today.year}-{today.month}-{today.day}")
@@ -130,16 +131,20 @@ if __name__ == '__main__':
 
             if WITH_VISION:
                 plane.pause(True)
-                y_pred, h_err_pred = plane.est_pos_state() 
+                if args.keep_h:
+                    y_pred, h_err_pred = plane.est_pos_state()
+                    #Calculations to get NN Errors and true height error
+                    h_err = gsc.get_glideslope_height_at(x) - h
+                    h_err_NN = h_err - h_err_pred
+                else:
+                    y_pred = plane.est_pos_state()
+                    h_err = None
+                    h_err_NN = None
+
                 # update state vector with y estimate
-                # err_h will be used directly
                 state[-2] = y_pred
-
-                #Calculations to get NN Errors and true height error
-                h_err = gsc.get_glideslope_height_at(x) - h
                 y_err_NN = y - y_pred
-                h_err_NN = h_err - h_err_pred
-
+                
                 writer.writerow([phi, theta, psi, x, y, y_pred, h, h_err, h_err_pred, y_err_NN, h_err_NN]) #Write to the file at each iteration 
                 # print("Y: %f", y_1)
 

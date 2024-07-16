@@ -18,11 +18,12 @@ class XPlaneVisionDriver(XPlaneDriver):
     def __init__(self, state_estimator, home_heading=53.7,
                  local_start=(-35285.421875, 40957.0234375),
                  start_ground_range=12464, start_elev = 1029.45,
-                 t=(-25159.26953, 33689.8125)):
+                 t=(-25159.26953, 33689.8125), keep_h=True):
         super().__init__(home_heading, local_start, start_ground_range,
-                         start_elev, t)
+                         start_elev, t, keep_h)
         self._state_estimator = state_estimator
-        self._orient_norm_divisor = torch.FloatTensor([180., 180., 180., 2000.])
+        self._orient_norm_divisor = torch.FloatTensor([180., 180., 180., float(start_ground_range)])
+        self._keep_h = keep_h
 
         # Need to stop and take image
         self._sct = mss.mss()
@@ -46,15 +47,19 @@ class XPlaneVisionDriver(XPlaneDriver):
         img, orient_alt = img[None, :, :, :], orient_alt[None, :]
 
         with torch.no_grad():
-            label_mult = 150. # must match the normalization used in AutolandImageDataset when training network
-            y_err, h_err = self._state_estimator(img, orient_alt).flatten()
-            y_err *= label_mult
-            h_err *= label_mult
-            print("Got here")
-            print("Y: %f", y_err)
-            print("H: %f", h_err)
-
-        return y_err.item(), h_err.item()
+            label_mult = 50. # must match the normalization used in AutolandImageDataset when training network
+            if self._keep_h:
+                y_err, h_err = self._state_estimator(img, orient_alt).flatten()
+                y_err *= label_mult
+                h_err *= label_mult
+                return y_err.item(), h_err.item()
+            else:
+                y_err = self._state_estimator(img, orient_alt).flatten()
+                y_err *= label_mult
+                return y_err.item()
+            # print("Got here")
+            # print("Y: %f", y_err)
+            # print("H: %f", h_err)
 
 
 if __name__ == "__main__":

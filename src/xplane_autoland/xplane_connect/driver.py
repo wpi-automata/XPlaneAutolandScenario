@@ -10,7 +10,7 @@ from src.xplane_autoland.xplane_connect.xpc3 import XPlaneConnect
 class XPlaneDriver:
     def __init__(self, home_heading=53.7, local_start=(-35285.421875, 40957.0234375),
                  start_ground_range=12464, start_elev = 1029.45,
-                 t=(-25159.26953, 33689.8125)):
+                 t=(-25159.26953, 33689.8125), keep_h=True):
         self._client = XPlaneConnect()
         self._home_heading = home_heading
         self._local_start = local_start
