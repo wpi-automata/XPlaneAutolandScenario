@@ -61,6 +61,14 @@ class XPlaneVisionDriver(XPlaneDriver):
             # print("Y: %f", y_err)
             # print("H: %f", h_err)
 
+    def get_no_h_state(self, img, orient_alt): #TODO: (For Ava) Delete this function. It's used for 1 irrelvant thing
+        with torch.no_grad():
+            label_mult = 50. 
+            y_err = self._state_estimator(img, orient_alt).flatten()
+            y_err *= label_mult
+
+        return y_err.item()
+
 
 if __name__ == "__main__":
     model = AutolandPerceptionModel(resnet_version="50")
