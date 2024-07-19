@@ -214,7 +214,7 @@ if __name__ == '__main__':
         data_dir=str(repo_dir/"dataWPI_50-10")
     logger.info(f"Using data from: {data_dir}")
     max_values = get_max(data_dir)
-    full_dataset = AutolandImageDataset(f"{data_dir}/states.csv", f"{data_dir}/images", max_value=max_values[0], offset=max_values[1], keep_h=True)
+    full_dataset = AutolandImageDataset(f"{data_dir}/states.csv", f"{data_dir}/images", max_value=max_values[0], keep_h=True)
     train_size = int(0.8 * len(full_dataset))
     val_size = len(full_dataset) - train_size
     logger.info(f"Dataset Train size: {train_size}, Val size: {val_size}")

@@ -47,7 +47,7 @@ class XPlaneVisionDriver(XPlaneDriver):
         img, orient_alt = img[None, :, :, :], orient_alt[None, :]
 
         with torch.no_grad():
-            label_mult = 50. # must match the normalization used in AutolandImageDataset when training network
+            label_mult = 150. # must match the normalization used in AutolandImageDataset when training network
             if self._keep_h:
                 y_err, h_err = self._state_estimator(img, orient_alt).flatten()
                 y_err *= label_mult
@@ -63,7 +63,7 @@ class XPlaneVisionDriver(XPlaneDriver):
 
     def get_no_h_state(self, img, orient_alt): #TODO: (For Ava) Delete this function. It's used for 1 irrelvant thing
         with torch.no_grad():
-            label_mult = 50. 
+            label_mult = 150. 
             y_err = self._state_estimator(img, orient_alt).flatten()
             y_err *= label_mult
 
