@@ -14,7 +14,7 @@ from src.xplane_autoland.vision.xplane_data import AutolandImageDataset
 from src.xplane_autoland.controllers.glideslope_controller import GlideSlopeController
 
 def generate_data(plane, dataloader, save_dir, data_dir):
-    gsc = GlideSlopeController(gamma=3)
+    gsc = GlideSlopeController(gamma=3.5) #Safe slope of the plane 
     print(f"Attempting to save data...")
     statepath = Path(f"{save_dir}/generated_states.csv")
     if not statepath.is_file():
