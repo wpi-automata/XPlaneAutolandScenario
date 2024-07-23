@@ -74,11 +74,11 @@ if __name__ == '__main__':
     data_dir = args.data_dir
 
     today = date.today()
-    save_dir = Path(f"{data_dir}/safe/{today.year}-{today.month}-{today.day}")
+    save_dir = Path(f"{data_dir}/safe")
     if not save_dir.exists():
         save_dir.mkdir()
 
-    unsafe_dir = Path(f"{data_dir}/unsafe/{today.year}-{today.month}-{today.day}")
+    unsafe_dir = Path(f"{data_dir}/unsafe")
     if not unsafe_dir.exists():
         unsafe_dir.mkdir()
 
