@@ -27,8 +27,8 @@ dphi_sigma    = max_degrees/3
 dtheta_sigma  = max_degrees/3
 dpsi_sigma    = max_degrees/3
 dx_bounds     = [0, 0]
-dy_bounds     = [-50, 50]
-dh_bounds     = [-50, 50]
+dy_bounds     = [-350, 350]
+dh_bounds     = [-350, 350]
 
 rads = math.radians(10)
 tan = math.tan(rads) #tangent of 10 degrees (in radians)
@@ -71,9 +71,10 @@ def data_for_x(driver, x_center, num_samples, save_dir):
             dpsi = random.normalvariate(0., dpsi_sigma)
 
             dx = float(random.randint(*dx_bounds))
-            r = int(tan * math.sqrt(pow(dx + x_center, 2) + pow(((dx + x_center) * slope), 2)))
-            dy = random.uniform(*[-r, r])
-            dh_bounds = [int((dx * slope) - r), int((dx * slope) + r)]
+            # r = int(tan * math.sqrt(pow(dx + x_center, 2) + pow(((dx + x_center) * slope), 2)))
+            # dy = random.uniform(*[-r, r])
+            # dh_bounds = [int((dx * slope) - r), int((dx * slope) + r)]
+            dy = float(random.randint(*dy_bounds))
             dh = float(random.randint(*dh_bounds))
             if h_center+dh < gsc._runway_elev:
                 continue
@@ -123,14 +124,14 @@ def data_for_x(driver, x_center, num_samples, save_dir):
 
 def sweep_x(driver, num_samples, distance, save_dir):
     # parameter sweeps
-    x_sweep      = np.arange(0., distance, 100.)
+    x_sweep      = np.arange(1200., distance, 300.)
     for x_center in x_sweep:
         data_for_x(driver, x_center, num_samples, save_dir)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Sample training data for a vision-based state estimator")
-    parser.add_argument("--x_center", type=float, help="Which x value to collect data around", default=12464)
+    parser.add_argument("--x_center", type=float, help="Which x value to collect data around", default=1500)
     parser.add_argument("--seed", type=int, help="Set the random seed", default=1)
     parser.add_argument("--num-samples", type=float, help="How many samples to collect for this value of x", default=600)
     args = parser.parse_args()
@@ -145,7 +146,7 @@ if __name__ == '__main__':
     print('Starting...')
     print(f"x_center: {args.x_center}")
 
-    save_dir = Path("/media/storage_drive/ULI Datasets/dataWPI_1500_50_10/slices") #Need to make sure we change this 
+    save_dir = Path("/media/storage_drive/ULI Datasets/OOD Data/dataWPI_350-15_sliced") #Need to make sure we change this 
     if not save_dir.exists():
         save_dir.mkdir()
     images_dir = save_dir / "images"
