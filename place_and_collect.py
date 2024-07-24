@@ -124,7 +124,7 @@ def data_for_x(driver, x_center, num_samples, save_dir):
 
 def sweep_x(driver, num_samples, distance, save_dir):
     # parameter sweeps
-    x_sweep      = np.arange(1200., distance, 300.)
+    x_sweep      = np.arange(0., distance, 300.)
     for x_center in x_sweep:
         data_for_x(driver, x_center, num_samples, save_dir)
 
