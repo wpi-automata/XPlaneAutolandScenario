@@ -29,10 +29,10 @@ def prep_csv(save_dir, name):
 def get_safe(save_dir, data_dir, unsafe_dir):
     safe_img_dir = f"{save_dir}/images"
     unsafe_img_dir = f"{unsafe_dir}/images"
-    writer = prep_csv(save_dir, "states.csv")
+    writer = prep_csv(save_dir, "states.csv") #All data that falls within the safe cone is saved here
     unsafe_writer = prep_csv(unsafe_dir, "states.csv")
 
-    with open(f"{data_dir}/states.csv") as states_file: #Another line to make sure consistent 
+    with open(f"{data_dir}/states.csv") as states_file:
         csv_reader = csv.reader(states_file, delimiter=',')
         next(csv_reader) #Skip label/header line
         slope = safe_slope
@@ -40,20 +40,18 @@ def get_safe(save_dir, data_dir, unsafe_dir):
         for row in csv_reader:
             safe = True
             img_name = re.findall("image_\S+", row[6])
-            #print(img_name[0])
-            img_path = f"{data_dir}/images/{img_name[0]}"
+            img_path = f"{data_dir}/images/{img_name[0]}" #Grab the image path to copy over to save_dir
             x = float(row[3]) #Distance from runway
             r = tan * math.sqrt(pow(x, 2) + pow((x * slope), 2)) #Radius of safe set
-            upper_bounds = [r, (x * slope) + r]
-            lower_bounds = [r * -1, (x * slope) - r]
-            for i in range(2):
+            upper_bounds = [r, (x * slope) + r] #Upper bound of y and h
+            lower_bounds = [r * -1, (x * slope) - r] #Lower bound of y and h
+            for i in range(2): #Iterate through y and h
                 item = float(row[4 + i]) #Skip phi, theta, and psi.
-                if(i == 1): item -= runway_elev
-                
+                if(i == 1): item -= runway_elev 
                 if (item > upper_bounds[i]) or (item < lower_bounds[i]): #if item is outside bounds, reject
                     rows += 1
                     safe = False
-                    unsafe_writer.writerow(row)
+                    unsafe_writer.writerow(row) #Add item to 'unsafe' csv
                     shutil.copy(img_path, unsafe_img_dir)
                     break
 
@@ -61,7 +59,7 @@ def get_safe(save_dir, data_dir, unsafe_dir):
                 writer.writerow(row)
                 shutil.copy(img_path, safe_img_dir)
                 
-        print("Rows removed from OG file: " + str(rows))
+        print("Rows removed from original file: " + str(rows))
 
 
 if __name__ == '__main__':
