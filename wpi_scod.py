@@ -47,14 +47,14 @@ dist_layer = scod.distributions.NormalMeanParamLayer()
 
 # torchscript = torch.jit.load("/home/achadbo/XPlaneAutolandScenario/models/scod/2024-6-18/scod_model_200_80percent.pt")
 # torchscript.eval()
-scod_model = torch.load("models/scod/2024-6-24/scod_model_12464_80percent.pt")
+scod_model = torch.load("models/scod/2024-7-29/scod_model_safeset_80percent.pt")
 scod_model.eval()
 # scod_model = scod.SCOD(model)
 
 
 
 
-data_dir = "/media/storage_drive/ULI Datasets/OOD Data/dataWPI_400-15"
+data_dir = "/media/storage_drive/ULI Datasets/dataWPI_1500_50_10/unsafe"
 full_dataset = AutolandImageDataset(f"{data_dir}/states.csv", f"{data_dir}/images")
 train_size = int(0.75 * len(full_dataset))
 val_size = len(full_dataset) - train_size
@@ -81,7 +81,7 @@ print("Signals calculated")
 
 
 
-statepath = Path(f"/home/achadbo/XPlaneAutolandScenario/Subsets/scod_400")
+statepath = Path(f"/home/achadbo/XPlaneAutolandScenario/Subsets/scod_unsafe")
 if not statepath.is_file():
     with open(str(statepath), 'w') as f:
         writer = csv.writer(f)

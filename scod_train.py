@@ -16,12 +16,12 @@ from src.xplane_autoland.vision.xplane_data import AutolandImageDataset
 
 
 model = AutolandPerceptionModel()
-model.load("/home/achadbo/XPlaneAutolandScenario/models/2024-4-1/best_model_params.pt")
+model.load("/home/achadbo/XPlaneAutolandScenario/models/2024-7-17/best_model_params.pt")
 dist_layer = scod.distributions.NormalMeanParamLayer()
 
 scod_model = scod.SCOD(model)
 
-data_dir = "/media/storage_drive/ULI Datasets/dataWPI_12464"
+data_dir = "/media/storage_drive/ULI Datasets/dataWPI_1500_50_10/safe"
 full_dataset = AutolandImageDataset(f"{data_dir}/states.csv", f"{data_dir}/images")
 train_size = int(0.80 * len(full_dataset))
 val_size = len(full_dataset) - train_size
@@ -30,6 +30,6 @@ train_dataset, val_dataset = torch.utils.data.random_split(full_dataset, [train_
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
 
 scod_model.process_dataset(train_dataset, dist_layer)
-torch.save(scod_model, "/home/achadbo/XPlaneAutolandScenario/models/scod/2024-6-24/scod_model_12464_80percent.pt")
+torch.save(scod_model, "/home/achadbo/XPlaneAutolandScenario/models/scod/2024-7-29/scod_model_safeset_80percent.pt")
 # scod_torchscript = torch.jit.script(scod_model)
 # scod_torchscript.save("/home/achadbo/XPlaneAutolandScenario/models/scod/2024-6-24/scod_model_17000_80percent.pt")
