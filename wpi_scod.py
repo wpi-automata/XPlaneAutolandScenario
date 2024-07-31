@@ -56,7 +56,7 @@ scod_model.eval()
 
 data_dir = "/media/storage_drive/ULI Datasets/dataWPI_1500_50_10/unsafe"
 full_dataset = AutolandImageDataset(f"{data_dir}/states.csv", f"{data_dir}/images")
-train_size = int(0.75 * len(full_dataset))
+train_size = int(0.0 * len(full_dataset))
 val_size = len(full_dataset) - train_size
 train_dataset, val_dataset = torch.utils.data.random_split(full_dataset, [train_size, val_size])
 # might need to experiment with different values for "batch_size" and "lr"
