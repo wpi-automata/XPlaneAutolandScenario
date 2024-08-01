@@ -54,7 +54,7 @@ scod_model.eval()
 
 
 
-data_dir = "/media/storage_drive/ULI Datasets/dataWPI_1500_50_10/unsafe"
+data_dir = "/media/storage_drive/ULI Datasets/dataWPI_1500_50_10/safe"
 full_dataset = AutolandImageDataset(f"{data_dir}/states.csv", f"{data_dir}/images")
 train_size = int(0.0 * len(full_dataset))
 val_size = len(full_dataset) - train_size
@@ -81,7 +81,7 @@ print("Signals calculated")
 
 
 
-statepath = Path(f"/home/achadbo/XPlaneAutolandScenario/Subsets/scod_unsafe")
+statepath = Path(f"/home/achadbo/XPlaneAutolandScenario/Subsets/scod_supersafe")
 if not statepath.is_file():
     with open(str(statepath), 'w') as f:
         writer = csv.writer(f)
