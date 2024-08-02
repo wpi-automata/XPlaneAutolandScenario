@@ -41,13 +41,13 @@ from src.xplane_autoland.vision.xplane_data import AutolandImageDataset
 # OR dist_layer = scod.distributions.NormalMeanDiagVarParamLayer()
 
 ## Attach dist layer to model and train it with our dataset
-dist_layer = scod.distributions.NormalMeanParamLayer()
+dist_layer = scod.distributions.NormalMeanDiagVarParamLayer()
 
 
 
 # torchscript = torch.jit.load("/home/achadbo/XPlaneAutolandScenario/models/scod/2024-6-18/scod_model_200_80percent.pt")
 # torchscript.eval()
-scod_model = torch.load("models/scod/2024-7-29/scod_model_safeset_80percent.pt")
+scod_model = torch.load("/home/achadbo/XPlaneAutolandScenario/models/scod/2024-7-29/scod_safeset_normmean_80percent.pt")
 scod_model.eval()
 # scod_model = scod.SCOD(model)
 
@@ -81,7 +81,7 @@ print("Signals calculated")
 
 
 
-statepath = Path(f"/home/achadbo/XPlaneAutolandScenario/Subsets/scod_supersafe")
+statepath = Path(f"/home/achadbo/XPlaneAutolandScenario/Subsets/scod_supersafe_normmean")
 if not statepath.is_file():
     with open(str(statepath), 'w') as f:
         writer = csv.writer(f)
