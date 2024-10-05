@@ -104,13 +104,8 @@ def data_for_x(driver, x_center, num_samples, save_dir):
                 print(f'Actual: {actual_orient_pos}')
             nv_pairs = zip(['phi', 'theta', 'psi', 'x', 'y', 'h'], actual_orient_pos)
             statestr = '_'.join([p0 + str(int(p1)) for p0, p1 in nv_pairs])
-<<<<<<< HEAD
-            fname = f'./{save_dir}/images/image_{statestr}.pt'
-            sct_img = sct.grab(sct.monitors[0])
-=======
             fname = f'{save_dir}/images/image_{statestr}.pt'
             sct_img = sct.grab(sct.monitors[1])
->>>>>>> origin/ava-error-dev
             pil_img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
             #pil_img.show()
             img = to_tensor(pil_img)

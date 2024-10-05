@@ -2,18 +2,6 @@ import torch
 import torchvision
 import torchvision.transforms as T
 from PIL import Image
-<<<<<<< HEAD
-
-tensor1 = torch.load('image_phi0_theta0_psi0_x1_y-8_h411.pt')
-tensor2 = torch.load('image_phi0_theta0_psi0_x1_y-8_h411WPI.pt')
-transform = T.ToPILImage()
-
-img1 = transform(tensor1)
-img2 = transform(tensor2)
-
-img1.show()
-img2.show()
-=======
 import numpy as np
 
 #tensor1 = torch.load('data/images/image_phi-1_theta-1_psi-1_x2709_y-31_h581.pt')
@@ -39,4 +27,3 @@ img4 = transform(tensor4)
 # img3.show()
 img4.show()
 #bgr.show()
->>>>>>> origin/ava-error-dev

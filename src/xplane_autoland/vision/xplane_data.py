@@ -5,14 +5,8 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision.io import read_image
 import warnings
-<<<<<<< HEAD
-import sys
-sys.path.append('/home/colette/XPlaneAutolandScenario/src/xplane_autoland')
-from controllers.glideslope_controller import GlideSlopeController
-=======
 
 from src.xplane_autoland.controllers.glideslope_controller import GlideSlopeController
->>>>>>> origin/ava-error-dev
 
 class AutolandImageDataset(Dataset):
     def __init__(self, annotations_file, img_dir, transform=None, target_transform=None, load_png=False,
