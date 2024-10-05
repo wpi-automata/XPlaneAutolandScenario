@@ -171,6 +171,7 @@ class XPlaneDriver:
         ovel = self.get_orient_vel_state()
         o    = self.get_orient_state()
         pos  = self.get_pos_state()
+ 
 
         return np.stack((vel, ovel, o, pos)).flatten()
 
@@ -191,6 +192,7 @@ class XPlaneDriver:
 
     def get_pos_state(self):
         x, y = self._get_home_xy()
+        
         h = self._client.getDREF('sim/flightmodel/position/elevation')[0]
         return np.array([x, y, h])
 
@@ -297,8 +299,8 @@ class XPlaneDriver:
         # Get the positions in home coordinates
         rotx, roty = self._local_to_home(x, y)
 
-        x = self._start_ground_range - roty
-        y = -rotx
+        x = self._start_ground_range - roty 
+        y = -rotx 
         return x, y
 
     # TODO: replace with single-step coordinate transform
@@ -309,7 +311,7 @@ class XPlaneDriver:
                 x: x-value in home coordinate frame
                 y: y-value in home coordinate frame
         """
-        rotx = 0.583055934597441 * x + -0.8124320138514389 * y
+        rotx = 0.583055934597441 * x + -0.8320138514389 * y
         roty = 0.8124320138514389 * x + 0.583055934597441 * y
         return rotx, roty
 

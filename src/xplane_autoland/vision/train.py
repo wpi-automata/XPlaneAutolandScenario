@@ -20,8 +20,13 @@ from torch.optim import lr_scheduler
 import torch.backends.cudnn as cudnn
 from torch.utils.tensorboard import SummaryWriter
 
+<<<<<<< HEAD
 from perception import AutolandPerceptionModel
 from xplane_data import AutolandImageDataset
+=======
+from src.xplane_autoland.vision.perception import AutolandPerceptionModel
+from src.xplane_autoland.vision.xplane_data import AutolandImageDataset
+>>>>>>> origin/ava-error-dev
 
 cudnn.benchmark = True
 plt.ion()   # interactive mode

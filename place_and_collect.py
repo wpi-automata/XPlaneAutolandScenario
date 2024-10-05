@@ -6,26 +6,34 @@ import numpy as np
 from pathlib import Path
 import random
 import time
-from tqdm import tqdm
+import math
+#from tqdm import tqdm
 
 from PIL import Image
 import torch
 from torchvision import transforms
 
-from xplane_autoland.xplane_connect.driver import XPlaneDriver
-from xplane_autoland.controllers.glideslope_controller import GlideSlopeController
-from xplane_autoland.vision.perception import AutolandPerceptionModel
+from src.xplane_autoland.xplane_connect.driver import XPlaneDriver
+from src.xplane_autoland.controllers.glideslope_controller import GlideSlopeController
+from src.xplane_autoland.vision.perception import AutolandPerceptionModel
 
 
 # for sigmas, chosen so that rarely ever goes beyond given value
 # dividing by 3 so that 3sigma is a bit of a bound
+
+#These are the values I changed to get the OOD information
 max_degrees   = 15.
 dphi_sigma    = max_degrees/3
 dtheta_sigma  = max_degrees/3
 dpsi_sigma    = max_degrees/3
-dx_bounds     = [-150, 150]
-dy_bounds     = [-150, 150]
-dh_bounds     = [-150, 150]
+dx_bounds     = [0, 0]
+dy_bounds     = [-350, 350]
+dh_bounds     = [-350, 350]
+
+rads = math.radians(10)
+tan = math.tan(rads) #tangent of 10 degrees (in radians)
+
+max_x = 1000
 
 
 model = AutolandPerceptionModel()
@@ -33,15 +41,15 @@ transform = model.preprocess
 to_tensor = transforms.PILToTensor()
 
 
-def data_for_x(driver, x_center, num_samples, save_dir="data"):
-    print(f"Saving data for x={x_center}")
+def data_for_x(driver, x_center, num_samples, save_dir):
     gsc    = GlideSlopeController(gamma=3)
 
     h_thresh = gsc._h_thresh
-    start_elev = driver._start_elev
-    slope = float(start_elev - h_thresh) / driver._start_ground_range
+    start_elev = 704 # max_x * tan #replaced with math bc not sure how to change driver to not have weird defaults
+    slope = tan # float(start_elev - h_thresh) / max_x
+    print(f"Slope for x_center {x_center}: {slope}")
 
-    statepath = Path(f"./{save_dir}/states.csv")
+    statepath = Path(f"{save_dir}/states.csv")
     if not statepath.is_file():
         with open(str(statepath), 'w') as f:
             writer = csv.writer(f)
@@ -61,7 +69,11 @@ def data_for_x(driver, x_center, num_samples, save_dir="data"):
             dphi = random.normalvariate(0., dphi_sigma)
             dtheta = random.normalvariate(0., dtheta_sigma)
             dpsi = random.normalvariate(0., dpsi_sigma)
+
             dx = float(random.randint(*dx_bounds))
+            # r = int(tan * math.sqrt(pow(dx + x_center, 2) + pow(((dx + x_center) * slope), 2)))
+            # dy = random.uniform(*[-r, r])
+            # dh_bounds = [int((dx * slope) - r), int((dx * slope) + r)]
             dy = float(random.randint(*dy_bounds))
             dh = float(random.randint(*dh_bounds))
             if h_center+dh < gsc._runway_elev:
@@ -92,9 +104,15 @@ def data_for_x(driver, x_center, num_samples, save_dir="data"):
                 print(f'Actual: {actual_orient_pos}')
             nv_pairs = zip(['phi', 'theta', 'psi', 'x', 'y', 'h'], actual_orient_pos)
             statestr = '_'.join([p0 + str(int(p1)) for p0, p1 in nv_pairs])
+<<<<<<< HEAD
             fname = f'./{save_dir}/images/image_{statestr}.pt'
             sct_img = sct.grab(sct.monitors[0])
+=======
+            fname = f'{save_dir}/images/image_{statestr}.pt'
+            sct_img = sct.grab(sct.monitors[1])
+>>>>>>> origin/ava-error-dev
             pil_img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+            #pil_img.show()
             img = to_tensor(pil_img)
             img = transform(img)
             torch.save(img, fname)
@@ -109,16 +127,16 @@ def data_for_x(driver, x_center, num_samples, save_dir="data"):
     print(f'Last Image Name: {fname}')
 
 
-def sweep_x(driver, prob):
+def sweep_x(driver, num_samples, distance, save_dir):
     # parameter sweeps
-    x_sweep      = np.arange(0., driver._start_ground_range, 100.)
-    for x_center in range(x_sweep):
-        data_for_x(driver, x_center, prob=prob)
+    x_sweep      = np.arange(900., distance, 300.)
+    for x_center in x_sweep:
+        data_for_x(driver, x_center, num_samples, save_dir)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Sample training data for a vision-based state estimator")
-    parser.add_argument("x_center", type=float, help="Which x value to collect data around")
+    parser.add_argument("--x_center", type=float, help="Which x value to collect data around", default=1500)
     parser.add_argument("--seed", type=int, help="Set the random seed", default=1)
     parser.add_argument("--num-samples", type=float, help="How many samples to collect for this value of x", default=600)
     args = parser.parse_args()
@@ -131,15 +149,18 @@ if __name__ == '__main__':
     driver.reset()
     time.sleep(4)
     print('Starting...')
+    print(f"x_center: {args.x_center}")
 
-    save_dir = Path("./data")
+    save_dir = Path("/media/storage_drive/ULI Datasets/OOD Data/dataWPI_350-15_sliced") #Need to make sure we change this 
     if not save_dir.exists():
         save_dir.mkdir()
     images_dir = save_dir / "images"
     if not images_dir.exists():
         images_dir.mkdir()
-    with open(f"./{save_dir}/config.txt", "w") as f:
+    with open(f"{save_dir}/config.txt", "w") as f:
         f.write(f"Save Directory: {save_dir}\n")
         f.write(f"Seed: {args.seed}\n")
-
-    data_for_x(driver, args.x_center, args.num_samples, save_dir=save_dir)
+    
+    max_x = args.x_center - 100 + dx_bounds[1] # The actual maximum value of x that can be reached. Used for slope
+    sweep_x(driver, args.num_samples, args.x_center,  save_dir=save_dir)
+    #data_for_x(driver, args.x_center, args.num_samples, save_dir=save_dir)
