@@ -7,7 +7,7 @@ from pathlib import Path
 import random
 import time
 import math
-#from tqdm import tqdm
+from tqdm import tqdm
 
 from PIL import Image
 import torch
@@ -34,7 +34,6 @@ rads = math.radians(10)
 tan = math.tan(rads) #tangent of 10 degrees (in radians)
 
 max_x = 1000
-
 
 model = AutolandPerceptionModel()
 transform = model.preprocess
@@ -65,7 +64,8 @@ def data_for_x(driver, x_center, num_samples, save_dir):
         h_center = slope * x_center + h_thresh
         print(f"Base h = {h_center}")
         n = 0
-        while n < num_samples:
+
+        for n in tqdm(range(num_samples)):
             dphi = random.normalvariate(0., dphi_sigma)
             dtheta = random.normalvariate(0., dtheta_sigma)
             dpsi = random.normalvariate(0., dpsi_sigma)
@@ -105,15 +105,17 @@ def data_for_x(driver, x_center, num_samples, save_dir):
             nv_pairs = zip(['phi', 'theta', 'psi', 'x', 'y', 'h'], actual_orient_pos)
             statestr = '_'.join([p0 + str(int(p1)) for p0, p1 in nv_pairs])
             fname = f'{save_dir}/images/image_{statestr}.pt'
+            fname_png = f'{save_dir}/images/png/image_{statestr}.png'
             sct_img = sct.grab(sct.monitors[1])
             pil_img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
-            #pil_img.show()
+            # pil_img.show()
+            pil_img.save(fname_png, format="PNG")
             img = to_tensor(pil_img)
             img = transform(img)
             torch.save(img, fname)
             phi, theta, psi, x, y, h = actual_orient_pos
             writer.writerow([phi, theta, psi, x, y, h, fname])
-            n += 1
+            # n += 1
             time.sleep(0.15)
     except KeyboardInterrupt:
         print('Interrupted.', flush=True)
@@ -122,18 +124,26 @@ def data_for_x(driver, x_center, num_samples, save_dir):
     print(f'Last Image Name: {fname}')
 
 
-def sweep_x(driver, num_samples, distance, save_dir):
+def sweep_x(driver, num_samples, max_runway_distance, save_dir):
+    """
+    x: Distance from runway
+    """
     # parameter sweeps
-    x_sweep      = np.arange(900., distance, 300.)
-    for x_center in x_sweep:
+    # This creates a NumPy array starting at 900., increasing by 300., up to but not including distance.
+    
+    start_runway_distance = 100.0
+    distance_increment = 20.0
+    
+    x_sweep = np.arange(start_runway_distance, max_runway_distance, distance_increment)
+    
+    for x_center in tqdm(x_sweep, desc="Sweeping X"):
         data_for_x(driver, x_center, num_samples, save_dir)
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Sample training data for a vision-based state estimator")
-    parser.add_argument("--x_center", type=float, help="Which x value to collect data around", default=1500)
+    parser.add_argument("--x_center", type=float, help="Which x value to collect data around", default=1000)
     parser.add_argument("--seed", type=int, help="Set the random seed", default=1)
-    parser.add_argument("--num-samples", type=float, help="How many samples to collect for this value of x", default=600)
+    parser.add_argument("--num-samples", type=float, help="How many samples to collect for this value of x", default=20)
     args = parser.parse_args()
 
     random.seed(args.seed)
@@ -146,12 +156,14 @@ if __name__ == '__main__':
     print('Starting...')
     print(f"x_center: {args.x_center}")
 
-    save_dir = Path("/media/storage_drive/ULI Datasets/OOD Data/dataWPI_350-15_sliced") #Need to make sure we change this 
+    save_dir = Path("/media/storage_drive/ULI Datasets/Summer25/350_") #Need to make sure we change this 
     if not save_dir.exists():
         save_dir.mkdir()
     images_dir = save_dir / "images"
     if not images_dir.exists():
         images_dir.mkdir()
+        images_dir_png = images_dir / "png"
+        images_dir_png.mkdir()
     with open(f"{save_dir}/config.txt", "w") as f:
         f.write(f"Save Directory: {save_dir}\n")
         f.write(f"Seed: {args.seed}\n")
